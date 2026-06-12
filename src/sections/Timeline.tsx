@@ -132,18 +132,22 @@ function SprintRow({ sprint }: SprintRowProps) {
   const allDone = sprint.milestones.length > 0 && sprint.milestones.every(m => m.done)
 
   if (sprint.ipWeek) {
+    const hasMilestones = sprint.milestones.length > 0
     return (
-      <div className="flex items-center gap-0 py-2 opacity-50">
-        <div className="w-[160px] text-right pr-6 text-xs text-muted-foreground shrink-0">
-          {formatDate(sprint.endDate)}
+      <div className={cn('flex gap-0 py-1.5', !hasMilestones && 'opacity-40')}>
+        <div className="w-[160px] text-right pr-6 shrink-0 pt-2">
+          <div className="text-[10px] text-muted-foreground">{formatDate(sprint.endDate)}</div>
         </div>
-        <div className="relative flex items-center">
-          <div className="w-3 h-3 rounded-full border border-border bg-background" />
+        <div className="relative shrink-0 w-0">
+          <div className="absolute top-2.5 w-3 h-3 rounded-full border border-dashed border-muted-foreground bg-background -translate-x-1/2 z-10" />
         </div>
-        <div className="pl-5">
+        <div className="flex-1 ml-7 flex items-center gap-4 flex-wrap py-2">
           <span className="text-[11px] font-bold tracking-[0.15em] uppercase text-muted-foreground bg-muted px-2.5 py-0.5 rounded-full">
             IP Week
           </span>
+          {hasMilestones && sprint.milestones.map((m, idx) => (
+            <MilestoneChip key={idx} milestone={m} />
+          ))}
         </div>
       </div>
     )
