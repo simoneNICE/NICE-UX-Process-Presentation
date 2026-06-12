@@ -178,23 +178,21 @@ function SprintRow({ sprint }: SprintRowProps) {
         )} />
       </div>
 
-      {/* Card */}
-      <div className={cn(
-        'flex-1 ml-7 mb-2 rounded-2xl border p-5 transition-all duration-200',
-        allDone
-          ? 'border-emerald-200 bg-gradient-to-br from-emerald-50 to-white shadow-md shadow-emerald-100'
-          : 'bg-white shadow-sm hover:shadow-md border-border hover:border-orange-200'
-      )}>
-        {sprint.milestones.length === 0 ? (
-          <p className="text-sm text-muted-foreground/60 italic">No milestones yet</p>
-        ) : (
+      {/* Card — only rendered when there are milestones */}
+      {sprint.milestones.length > 0 && (
+        <div className={cn(
+          'flex-1 ml-7 mb-2 rounded-2xl border p-5 transition-all duration-200',
+          allDone
+            ? 'border-emerald-200 bg-gradient-to-br from-emerald-50 to-white shadow-md shadow-emerald-100'
+            : 'bg-white shadow-sm hover:shadow-md border-border hover:border-orange-200'
+        )}>
           <div className="flex flex-wrap gap-3">
             {sprint.milestones.map((m, idx) => (
               <MilestoneChip key={idx} milestone={m} />
             ))}
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   )
 }
