@@ -142,9 +142,6 @@ function SprintRow({ sprint }: SprintRowProps) {
           <div className="absolute top-2.5 w-3 h-3 rounded-full border border-dashed border-muted-foreground bg-background -translate-x-1/2 z-10" />
         </div>
         <div className="flex-1 ml-7 flex items-center gap-4 flex-wrap py-2">
-          <span className="text-[11px] font-bold tracking-[0.15em] uppercase text-muted-foreground bg-muted px-2.5 py-0.5 rounded-full">
-            IP Week
-          </span>
           {hasMilestones && sprint.milestones.map((m, idx) => (
             <MilestoneChip key={idx} milestone={m} />
           ))}
