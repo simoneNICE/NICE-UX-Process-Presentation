@@ -10,7 +10,7 @@
     --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;
 
-    --primary: 25 95% 53%;
+    --primary: 221 83% 53%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 210 40% 96%;
@@ -27,14 +27,9 @@
 
     --border: 214 32% 91%;
     --input: 214 32% 91%;
-    --ring: 25 95% 53%;
+    --ring: 221 83% 53%;
 
     --radius: 0.75rem;
-
-    /* Pillar colors */
-    --pillar-knowledge: 217 91% 60%;
-    --pillar-efficiency: 142 71% 45%;
-    --pillar-governance: 262 83% 58%;
   }
 
   * {
@@ -51,16 +46,16 @@
 }
 
 @layer utilities {
-  .gradient-orange {
-    background: linear-gradient(135deg, #f97316 0%, #fb923c 50%, #fdba74 100%);
+  .gradient-primary {
+    background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #3b82f6 100%);
   }
 
   .gradient-page {
-    background: linear-gradient(180deg, #fff7ed 0%, #fff 8%, #f8fafc 100%);
+    background: linear-gradient(180deg, #eff6ff 0%, #fff 8%, #f8fafc 100%);
   }
 
-  .text-gradient-orange {
-    background: linear-gradient(135deg, #ea580c, #f97316, #fb923c);
+  .text-gradient-primary {
+    background: linear-gradient(135deg, #1e40af, #2563eb, #3b82f6);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;

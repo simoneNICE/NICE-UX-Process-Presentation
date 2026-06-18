@@ -9,8 +9,8 @@ export default function App() {
     <div className="min-h-screen bg-background">
       <Navbar />
       <main>
-        <Timeline />
         <Vision />
+        <Timeline />
         <Team />
         <Resources />
       </main>

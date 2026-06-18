@@ -30,12 +30,12 @@ export function Vision() {
     <section id="vision" className="py-28 bg-white relative overflow-hidden">
       {/* Decorative background */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-orange-50 rounded-full blur-3xl opacity-60" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-blue-50 rounded-full blur-3xl opacity-60" />
       </div>
 
       <div className="max-w-5xl mx-auto px-8 relative z-10">
         <h2 className="text-5xl font-extrabold mb-4">
-          <span className="text-gradient-orange">Vision</span>
+          <span className="text-gradient-primary">Vision</span>
         </h2>
         <p className="text-xl text-foreground/80 leading-relaxed max-w-2xl mb-16">
           {/* Replace with final vision text */}

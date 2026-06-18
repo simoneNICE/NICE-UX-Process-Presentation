@@ -9,15 +9,21 @@ export const PILLAR_CONFIG: Record<Pillar, {
   border: string
   glow: string
   iconColor: string
+  doneBg: string
+  doneBorder: string
+  doneSubtext: string
 }> = {
   Knowledge: {
     label: 'Knowledge',
-    dot: 'bg-blue-500',
-    text: 'text-blue-700',
-    bg: 'bg-blue-50',
-    border: 'border-blue-200',
-    glow: 'shadow-blue-100',
-    iconColor: '#3b82f6',
+    dot: 'bg-orange-500',
+    text: 'text-orange-700',
+    bg: 'bg-orange-50',
+    border: 'border-orange-200',
+    glow: 'shadow-orange-100',
+    iconColor: '#f97316',
+    doneBg: 'from-orange-600 to-orange-400',
+    doneBorder: 'border-orange-400',
+    doneSubtext: 'text-orange-100',
   },
   Efficiency: {
     label: 'Efficiency',
@@ -27,6 +33,9 @@ export const PILLAR_CONFIG: Record<Pillar, {
     border: 'border-emerald-200',
     glow: 'shadow-emerald-100',
     iconColor: '#10b981',
+    doneBg: 'from-emerald-600 to-emerald-400',
+    doneBorder: 'border-emerald-400',
+    doneSubtext: 'text-emerald-100',
   },
   Governance: {
     label: 'Governance',
@@ -36,6 +45,9 @@ export const PILLAR_CONFIG: Record<Pillar, {
     border: 'border-violet-200',
     glow: 'shadow-violet-100',
     iconColor: '#8b5cf6',
+    doneBg: 'from-violet-600 to-violet-400',
+    doneBorder: 'border-violet-400',
+    doneSubtext: 'text-violet-100',
   },
 }
 
