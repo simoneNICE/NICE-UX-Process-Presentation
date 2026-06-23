@@ -1,0 +1,489 @@
+import { CheckCircle2, Circle, ChevronRight, X } from 'lucide-react'
+import { useState, useMemo } from 'react'
+import { sprints } from '@/data/milestones'
+import { PILLAR_CONFIG } from '@/components/PillarBadge'
+import { cn } from '@/lib/utils'
+import type { Pillar, Milestone } from '@/types'
+
+const PILLAR_META: Record<Pillar, { icon: string; description: string; gradient: string }> = {
+  Knowledge: {
+    icon: '📚',
+    description: 'Build a shared foundation of methods, guides, and best practices.',
+    gradient: 'from-orange-500 to-amber-400',
+  },
+  Efficiency: {
+    icon: '⚡',
+    description: 'Streamline processes and reduce friction across design workflows.',
+    gradient: 'from-emerald-500 to-teal-400',
+  },
+  Governance: {
+    icon: '🏛️',
+    description: 'Establish clear standards, ownership, and quality checkpoints.',
+    gradient: 'from-violet-500 to-purple-400',
+  },
+}
+
+const PILLARS: Pillar[] = ['Knowledge', 'Efficiency', 'Governance']
+
+function getAllMilestones(): Milestone[] {
+  return sprints.flatMap(s => s.milestones)
+}
+
+function getProgress() {
+  const today = new Date()
+  const start = new Date('2026-05-26')
+  const end = new Date('2026-12-15')
+  const pct = Math.min(100, Math.max(0, ((today.getTime() - start.getTime()) / (end.getTime() - start.getTime())) * 100))
+  const all = getAllMilestones()
+  const done = all.filter(m => m.done).length
+  const total = all.length
+  return { pct: Math.round(pct), done, total }
+}
+
+function groupByProject(milestones: Milestone[]): Map<string, Milestone[]> {
+  const map = new Map<string, Milestone[]>()
+  for (const m of milestones) {
+    if (!map.has(m.project)) map.set(m.project, [])
+    map.get(m.project)!.push(m)
+  }
+  return map
+}
+
+export function FocusAreas() {
+  const { pct, done, total } = getProgress()
+  const allMilestones = getAllMilestones()
+
+  const [selectedOwners, setSelectedOwners] = useState<Set<string>>(new Set())
+
+  const ownerCounts = useMemo(() => {
+    const map = new Map<string, number>()
+    allMilestones.forEach(m => {
+      if (m.owner) map.set(m.owner, (map.get(m.owner) ?? 0) + 1)
+    })
+    return [...map.entries()].sort((a, b) => b[1] - a[1])
+  }, [allMilestones])
+
+  const toggleOwner = (owner: string) => {
+    setSelectedOwners(prev => {
+      const next = new Set(prev)
+      if (next.has(owner)) next.delete(owner)
+      else next.add(owner)
+      return next
+    })
+  }
+
+  const isFiltered = selectedOwners.size > 0
+
+  return (
+    <section id="vision" className="py-24 bg-white relative overflow-hidden">
+      {/* Background glow */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[300px] bg-blue-50 rounded-full blur-3xl opacity-50" />
+      </div>
+
+      <div className="max-w-6xl mx-auto px-8 relative z-10">
+
+        {/* Vision intro */}
+        <div className="mb-12">
+          <h2 className="text-5xl font-extrabold mb-4">
+            <span className="text-gradient-primary">Vision</span>
+          </h2>
+          <p className="text-xl text-foreground/80 leading-relaxed max-w-2xl mb-8">
+            The UX Process Pillar is a strategic initiative to raise the Design team's maturity —
+            bringing consistent methodology, shared knowledge, and clear governance,
+            all accelerated by AI.
+          </p>
+
+          {/* Overall progress */}
+          <div className="flex items-center gap-6 max-w-md">
+            <div className="flex-1">
+              <div className="flex justify-between text-xs text-muted-foreground mb-1.5">
+                <span>{done} milestones completed</span>
+                <span>{total - done} remaining</span>
+              </div>
+              <div className="h-2.5 bg-muted rounded-full overflow-hidden">
+                <div
+                  className="h-full gradient-primary rounded-full transition-all duration-700 shadow-sm"
+                  style={{ width: `${(done / Math.max(total, 1)) * 100}%` }}
+                />
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-2xl font-black text-gradient-primary">{pct}%</div>
+              <div className="text-xs text-muted-foreground">elapsed</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Owner filter */}
+        {ownerCounts.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2 mb-8">
+            {ownerCounts.map(([owner, count]) => {
+              const active = selectedOwners.has(owner)
+              return (
+                <button
+                  key={owner}
+                  onClick={() => toggleOwner(owner)}
+                  className={cn(
+                    'flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm font-medium transition-all duration-200',
+                    active
+                      ? 'bg-foreground text-background border-foreground shadow-md scale-105'
+                      : 'bg-white text-foreground border-border hover:border-foreground/40 hover:shadow-sm'
+                  )}
+                >
+                  {owner}
+                  <span className={cn(
+                    'text-[11px] font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center transition-colors duration-200',
+                    active ? 'bg-white/20 text-background' : 'bg-muted text-muted-foreground'
+                  )}>
+                    {count}
+                  </span>
+                </button>
+              )
+            })}
+            {isFiltered && (
+              <button
+                onClick={() => setSelectedOwners(new Set())}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs text-muted-foreground hover:text-foreground border border-dashed border-border hover:border-foreground/40 transition-all duration-200"
+              >
+                <X className="w-3 h-3" />
+                Clear
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Pillar columns */}
+        <div className="grid grid-cols-3 gap-6 mb-10">
+          {PILLARS.map(pillar => {
+            const c = PILLAR_CONFIG[pillar]
+            const meta = PILLAR_META[pillar]
+            const milestones = allMilestones.filter(m => m.pillar === pillar)
+            const byProject = groupByProject(milestones)
+            const doneCount = milestones.filter(m => m.done).length
+
+            return (
+              <div
+                key={pillar}
+                className="flex flex-col rounded-2xl border border-border bg-white shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300"
+              >
+                {/* Top gradient accent */}
+                <div className={`h-1 bg-gradient-to-r ${meta.gradient}`} />
+
+                {/* Pillar header */}
+                <div className="px-6 pt-6 pb-5">
+                  <div className="text-3xl mb-3">{meta.icon}</div>
+                  <h3 className="text-xl font-extrabold text-foreground mb-1">{pillar}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed mb-4">{meta.description}</p>
+
+                  {/* Per-pillar progress */}
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                      <div
+                        className={`h-full bg-gradient-to-r ${meta.gradient} rounded-full transition-all duration-700`}
+                        style={{ width: `${(doneCount / Math.max(milestones.length, 1)) * 100}%` }}
+                      />
+                    </div>
+                    <span className={cn('text-xs font-semibold', c.text)}>
+                      {doneCount}/{milestones.length}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Divider */}
+                <div className={cn('mx-6 border-t', c.border)} />
+
+                {/* Projects */}
+                <div className="flex-1 p-5 space-y-5">
+                  {byProject.size === 0 && (
+                    <p className="text-xs text-muted-foreground/50 italic text-center py-6">
+                      No milestones yet
+                    </p>
+                  )}
+                  {[...byProject.entries()].map(([project, items]) => (
+                    <ProjectGroup
+                      key={project}
+                      project={project}
+                      milestones={items}
+                      pillar={pillar}
+                      selectedOwners={selectedOwners}
+                    />
+                  ))}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Timeline ruler */}
+        <SprintRuler />
+
+      </div>
+    </section>
+  )
+}
+
+const RULER_START = '2026-05-26'
+const RULER_END = '2027-10-05'
+
+function SprintRuler() {
+  const start = new Date(RULER_START).getTime()
+  const end   = new Date(RULER_END).getTime()
+  const total = end - start
+  const today = new Date()
+
+  const toPct = (dateStr: string) =>
+    Math.min(100, Math.max(0, (new Date(dateStr).getTime() - start) / total * 100))
+
+  const todayPct   = toPct(today.toISOString().split('T')[0])
+  const todayInRange = today.getTime() >= start && today.getTime() <= end
+
+  // Month labels every 2 months
+  const months: { label: string; pct: number }[] = []
+  const cursor = new Date(RULER_START)
+  cursor.setDate(1)
+  cursor.setMonth(cursor.getMonth() + 1)
+  while (cursor.getTime() < end) {
+    months.push({
+      label: cursor.toLocaleDateString('en-GB', { month: 'short', year: '2-digit' }),
+      pct: toPct(cursor.toISOString().split('T')[0]),
+    })
+    cursor.setMonth(cursor.getMonth() + 2)
+  }
+
+  return (
+    <div className="pt-6 border-t border-border/60">
+      {/* Ruler area */}
+      <div className="relative h-16">
+        {/* Base line */}
+        <div className="absolute left-0 right-0 bg-border" style={{ top: '32px', height: '1px' }} />
+
+        {/* Sprints */}
+        {sprints.map((s, i) => {
+          const pct = toPct(s.endDate)
+          return (
+            <div key={i} className="absolute" style={{ left: `${pct}%` }}>
+              {/* Tick */}
+              <div
+                className={cn('absolute -translate-x-px', s.ipWeek ? 'bg-blue-200' : 'bg-border/80')}
+                style={{ top: '28px', width: '1px', height: s.ipWeek ? '10px' : '6px' }}
+              />
+              {/* Milestone dots */}
+              {s.milestones.length > 0 && (
+                <div className="absolute flex gap-px" style={{ top: '14px', transform: 'translateX(-50%)' }}>
+                  {s.milestones.map((m, j) => (
+                    <div
+                      key={j}
+                      title={`${m.title} (${m.owner || m.pillar})`}
+                      className={cn(
+                        'rounded-full cursor-help transition-transform hover:scale-150',
+                        PILLAR_CONFIG[m.pillar].dot,
+                        m.done ? 'opacity-100' : 'opacity-40'
+                      )}
+                      style={{ width: '7px', height: '7px' }}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          )
+        })}
+
+        {/* TODAY marker */}
+        {todayInRange && (
+          <div className="absolute" style={{ left: `${todayPct}%`, top: '22px', transform: 'translateX(-50%)' }}>
+            <div className="w-0.5 h-6 bg-orange-500 rounded-full mx-auto" />
+            <span className="block text-center text-[8px] font-bold text-orange-500 whitespace-nowrap mt-0.5">
+              TODAY
+            </span>
+          </div>
+        )}
+
+        {/* Month labels */}
+        {months.map((m, i) => (
+          <div key={i} className="absolute" style={{ left: `${m.pct}%`, top: '42px', transform: 'translateX(-50%)' }}>
+            <span className="text-[9px] text-muted-foreground/50 whitespace-nowrap">{m.label}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Legend */}
+      <div className="flex items-center gap-5 mt-1 justify-end">
+        {PILLARS.map(p => (
+          <span key={p} className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+            <span className={cn('rounded-full', PILLAR_CONFIG[p].dot)} style={{ width: '7px', height: '7px' }} />
+            {p}
+          </span>
+        ))}
+        <span className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+          <span className="rounded-full bg-orange-500" style={{ width: '7px', height: '7px' }} />
+          Today
+        </span>
+        <span className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+          <span className="rounded-full bg-gray-400 opacity-40" style={{ width: '7px', height: '7px' }} />
+          Pending
+        </span>
+      </div>
+    </div>
+  )
+}
+
+function ProjectGroup({ project, milestones, pillar, selectedOwners }: {
+  project: string
+  milestones: Milestone[]
+  pillar: Pillar
+  selectedOwners: Set<string>
+}) {
+  const c = PILLAR_CONFIG[pillar]
+  const doneCount = milestones.filter(m => m.done).length
+  const isFiltered = selectedOwners.size > 0
+  const visibleCount = isFiltered
+    ? milestones.filter(m => m.owner && selectedOwners.has(m.owner)).length
+    : milestones.length
+
+  // Hide entire group if filter is active and no items match
+  if (isFiltered && visibleCount === 0) return null
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-2">
+        <h4 className="text-sm font-bold text-foreground">{project}</h4>
+        <span className={cn('text-[10px] font-semibold px-2 py-0.5 rounded-full border transition-all duration-300', c.bg, c.text, c.border)}>
+          {isFiltered ? `${visibleCount}/` : ''}{doneCount}/{milestones.length}
+        </span>
+      </div>
+      <ul className="space-y-1.5">
+        {milestones.map((m, i) => (
+          <MilestoneItem
+            key={i}
+            milestone={m}
+            visible={!isFiltered || (!!m.owner && selectedOwners.has(m.owner))}
+          />
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+function formatSprintDate(iso: string) {
+  return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+}
+
+function MilestoneItem({ milestone, visible = true }: { milestone: Milestone; visible?: boolean }) {
+  const [open, setOpen] = useState(false)
+  const c = PILLAR_CONFIG[milestone.pillar]
+  const meta = PILLAR_META[milestone.pillar]
+  const sprintTag = milestone.sprintLabel.startsWith('IP')
+    ? 'IP Week'
+    : `S${milestone.sprintLabel}`
+
+  return (
+    <>
+      <li className={cn(
+        'transition-all duration-300 ease-in-out overflow-hidden',
+        visible ? 'opacity-100 max-h-32' : 'opacity-0 max-h-0 pointer-events-none'
+      )}>
+        <button
+          onClick={() => setOpen(true)}
+          className={cn(
+            'w-full flex items-start gap-2.5 px-3 py-2.5 rounded-xl border text-left transition-all group',
+            milestone.done
+              ? `bg-gradient-to-br ${meta.gradient} border-transparent shadow-sm`
+              : 'bg-white border-border hover:shadow-sm'
+          )}
+        >
+          {milestone.done
+            ? <CheckCircle2 className="w-4 h-4 text-white flex-shrink-0 mt-0.5" />
+            : <Circle className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: c.iconColor }} />
+          }
+          <div className="flex-1 min-w-0">
+            <span className={cn(
+              'text-sm leading-snug block',
+              milestone.done ? 'text-white font-semibold' : 'text-foreground font-medium'
+            )}>
+              {milestone.title}
+            </span>
+            <div className={cn(
+              'flex items-center gap-2 mt-1.5',
+              milestone.done ? 'text-white/70' : 'text-muted-foreground/70'
+            )}>
+              <span className={cn(
+                'text-[13px] font-black tracking-tight',
+                milestone.done ? 'text-white' : 'text-foreground/80'
+              )}>
+                {sprintTag}
+              </span>
+              <span className="text-[10px] font-medium">
+                {formatSprintDate(milestone.sprintStartDate)} – {formatSprintDate(milestone.sprintEndDate)}
+              </span>
+              {milestone.owner && (
+                <span className="text-[10px] font-medium opacity-80">· {milestone.owner}</span>
+              )}
+            </div>
+          </div>
+          <ChevronRight className={cn(
+            'w-3.5 h-3.5 flex-shrink-0 mt-0.5 transition-colors',
+            milestone.done
+              ? 'text-white/50 group-hover:text-white/90'
+              : 'text-muted-foreground/30 group-hover:text-muted-foreground'
+          )} />
+        </button>
+      </li>
+      {open && <MilestoneModal milestone={milestone} onClose={() => setOpen(false)} />}
+    </>
+  )
+}
+
+function MilestoneModal({ milestone, onClose }: { milestone: Milestone; onClose: () => void }) {
+  const c = PILLAR_CONFIG[milestone.pillar]
+  const meta = PILLAR_META[milestone.pillar]
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="relative bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className={cn(
+          'px-6 py-5 border-b',
+          milestone.done
+            ? `bg-gradient-to-r ${meta.gradient}`
+            : cn(c.bg, c.border)
+        )}>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              {milestone.done && (
+                <div className="text-[10px] font-bold uppercase tracking-widest mb-1 text-white/70">
+                  ✓ Completed
+                </div>
+              )}
+              <p className={cn('text-[11px] font-semibold mb-1', milestone.done ? 'text-white/70' : c.text)}>
+                {milestone.pillar} · {milestone.project}
+              </p>
+              <h3 className={cn('text-lg font-extrabold leading-snug', milestone.done ? 'text-white' : 'text-foreground')}>
+                {milestone.title}
+              </h3>
+            </div>
+            <button
+              onClick={onClose}
+              className={cn(
+                'flex-shrink-0 p-1.5 rounded-lg transition-colors',
+                milestone.done ? 'text-white/70 hover:text-white hover:bg-white/20' : 'text-muted-foreground hover:bg-muted'
+              )}
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+        <div className="px-6 py-6">
+          <div className="text-sm text-muted-foreground italic text-center py-8 border border-dashed border-border rounded-xl bg-muted/30">
+            Details coming soon — TBD
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

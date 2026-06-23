@@ -1,46 +1,47 @@
 import type { SprintRow, Pillar } from '../types'
+import RAW_CSV from './milestones.csv?raw'
 
-const RAW_CSV = `sprint,end_date,ip_week,pillar,title,done
-190,2026-05-26,false,,,
-191,2026-06-16,false,Knowledge,Launch AI Training sessions,true
-191,2026-06-16,false,Efficiency,Reduce 30% of JIRA fields,true
-192,2026-07-07,false,Efficiency,100% Jira Engagement for Researchers,false
-192,2026-07-07,false,Governance,Create measurement baseline,false
-IP Week,2026-07-14,true,Efficiency,100% Jira Engagement for Designers,false
-193,2026-08-04,false,Efficiency,Introducing JIRA AI Assistant for managers and employees,false
-194,2026-08-25,false,Efficiency,Reduce 30% of time in JIRA through usage of AI Assistant,false
-194,2026-08-25,false,Governance,Introducing AI Assistant for Design System,false
-195,2026-09-15,false,,,
-196,2026-10-06,false,Efficiency,Reduce 50% of time in JIRA through usage of AI Assistant,false
-IP Week,2026-10-13,true,Governance,Increase 50% Design Efficiency,false
-197,2026-11-03,false,,,
-198,2026-11-24,false,,,
-199,2026-12-15,false,Governance,Increase 100% Design Efficiency,false`
+function addDays(iso: string, days: number): string {
+  const d = new Date(iso)
+  d.setDate(d.getDate() + days)
+  return d.toISOString().split('T')[0]
+}
 
 function parseCSV(csv: string): SprintRow[] {
   const lines = csv.trim().split('\n').slice(1)
   const sprintMap = new Map<string, SprintRow>()
   const sprintOrder: string[] = []
+  let prevEndDate = ''
 
   for (const line of lines) {
-    const [sprint, end_date, ip_week, pillar, title, done] = line.split(',')
+    const [sprint, end_date, ip_week, pillar, owner, project, title, done, details] = line.split(',')
     const key = `${sprint}-${end_date}`
 
     if (!sprintMap.has(key)) {
+      const startDate = prevEndDate ? addDays(prevEndDate, 1) : end_date
       sprintMap.set(key, {
         sprint,
+        startDate,
         endDate: end_date,
         ipWeek: ip_week === 'true',
         milestones: [],
       })
       sprintOrder.push(key)
+      prevEndDate = end_date
     }
 
-    if (pillar && title) {
+    if (pillar && project && title) {
+      const row = sprintMap.get(key)!
       sprintMap.get(key)!.milestones.push({
         pillar: pillar as Pillar,
+        project,
         title,
-        done: done === 'true',
+        done: done?.trim() === 'true',
+        sprintLabel: sprint,
+        sprintStartDate: row.startDate,
+        sprintEndDate: end_date,
+        owner: owner?.trim() ?? '',
+        details: details?.trim() ?? '',
       })
     }
   }

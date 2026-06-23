@@ -1,6 +1,5 @@
 import { Navbar } from '@/components/Navbar'
-import { Timeline } from '@/sections/Timeline'
-import { Vision } from '@/sections/Vision'
+import { FocusAreas } from '@/sections/FocusAreas'
 import { Team } from '@/sections/Team'
 import { Resources } from '@/sections/Resources'
 
@@ -9,8 +8,7 @@ export default function App() {
     <div className="min-h-screen bg-background">
       <Navbar />
       <main>
-        <Vision />
-        <Timeline />
+        <FocusAreas />
         <Team />
         <Resources />
       </main>
