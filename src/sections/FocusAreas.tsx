@@ -1,4 +1,4 @@
-import { CheckCircle2, Circle, ChevronRight, X } from 'lucide-react'
+import { CheckCircle2, Circle, Clock, ChevronRight, X, CalendarDays } from 'lucide-react'
 import { useState, useMemo } from 'react'
 import { sprints } from '@/data/milestones'
 import { PILLAR_CONFIG } from '@/components/PillarBadge'
@@ -35,7 +35,7 @@ function getProgress() {
   const end = new Date('2026-12-15')
   const pct = Math.min(100, Math.max(0, ((today.getTime() - start.getTime()) / (end.getTime() - start.getTime())) * 100))
   const all = getAllMilestones()
-  const done = all.filter(m => m.done).length
+  const done = all.filter(m => m.status === 'done').length
   const total = all.length
   return { pct: Math.round(pct), done, total }
 }
@@ -49,30 +49,35 @@ function groupByProject(milestones: Milestone[]): Map<string, Milestone[]> {
   return map
 }
 
+function milestoneMatchesPerson(m: Milestone, selected: Set<string>): boolean {
+  return (!!m.person1 && selected.has(m.person1)) || (!!m.person2 && selected.has(m.person2))
+}
+
 export function FocusAreas() {
   const { pct, done, total } = getProgress()
   const allMilestones = getAllMilestones()
 
-  const [selectedOwners, setSelectedOwners] = useState<Set<string>>(new Set())
+  const [selectedPersons, setSelectedPersons] = useState<Set<string>>(new Set())
 
-  const ownerCounts = useMemo(() => {
+  const personCounts = useMemo(() => {
     const map = new Map<string, number>()
     allMilestones.forEach(m => {
-      if (m.owner) map.set(m.owner, (map.get(m.owner) ?? 0) + 1)
+      if (m.person1) map.set(m.person1, (map.get(m.person1) ?? 0) + 1)
+      if (m.person2) map.set(m.person2, (map.get(m.person2) ?? 0) + 1)
     })
     return [...map.entries()].sort((a, b) => b[1] - a[1])
   }, [allMilestones])
 
-  const toggleOwner = (owner: string) => {
-    setSelectedOwners(prev => {
+  const togglePerson = (person: string) => {
+    setSelectedPersons(prev => {
       const next = new Set(prev)
-      if (next.has(owner)) next.delete(owner)
-      else next.add(owner)
+      if (next.has(person)) next.delete(person)
+      else next.add(person)
       return next
     })
   }
 
-  const isFiltered = selectedOwners.size > 0
+  const isFiltered = selectedPersons.size > 0
 
   return (
     <section id="vision" className="py-24 bg-white relative overflow-hidden">
@@ -86,13 +91,18 @@ export function FocusAreas() {
         {/* Vision intro */}
         <div className="mb-12">
           <h2 className="text-5xl font-extrabold mb-4">
-            <span className="text-gradient-primary">Vision</span>
+            <span className="text-gradient-primary">The Project</span>
           </h2>
           <p className="text-xl text-foreground/80 leading-relaxed max-w-2xl mb-8">
             The UX Process Pillar is a strategic initiative to raise the Design team's maturity —
             bringing consistent methodology, shared knowledge, and clear governance,
             all accelerated by AI.
           </p>
+
+          {/* Roadmap heading */}
+          <h3 className="text-3xl font-extrabold mb-4">
+            <span className="text-gradient-primary">Roadmap</span>
+          </h3>
 
           {/* Overall progress */}
           <div className="flex items-center gap-6 max-w-md">
@@ -115,15 +125,16 @@ export function FocusAreas() {
           </div>
         </div>
 
-        {/* Owner filter */}
-        {ownerCounts.length > 0 && (
+        {/* Person filter */}
+        {personCounts.length > 0 && (
           <div className="flex flex-wrap items-center gap-2 mb-8">
-            {ownerCounts.map(([owner, count]) => {
-              const active = selectedOwners.has(owner)
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mr-1">Filter by:</span>
+            {personCounts.map(([person, count]) => {
+              const active = selectedPersons.has(person)
               return (
                 <button
-                  key={owner}
-                  onClick={() => toggleOwner(owner)}
+                  key={person}
+                  onClick={() => togglePerson(person)}
                   className={cn(
                     'flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm font-medium transition-all duration-200',
                     active
@@ -131,7 +142,7 @@ export function FocusAreas() {
                       : 'bg-white text-foreground border-border hover:border-foreground/40 hover:shadow-sm'
                   )}
                 >
-                  {owner}
+                  {person}
                   <span className={cn(
                     'text-[11px] font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center transition-colors duration-200',
                     active ? 'bg-white/20 text-background' : 'bg-muted text-muted-foreground'
@@ -143,7 +154,7 @@ export function FocusAreas() {
             })}
             {isFiltered && (
               <button
-                onClick={() => setSelectedOwners(new Set())}
+                onClick={() => setSelectedPersons(new Set())}
                 className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs text-muted-foreground hover:text-foreground border border-dashed border-border hover:border-foreground/40 transition-all duration-200"
               >
                 <X className="w-3 h-3" />
@@ -160,7 +171,7 @@ export function FocusAreas() {
             const meta = PILLAR_META[pillar]
             const milestones = allMilestones.filter(m => m.pillar === pillar)
             const byProject = groupByProject(milestones)
-            const doneCount = milestones.filter(m => m.done).length
+            const doneCount = milestones.filter(m => m.status === 'done').length
 
             return (
               <div
@@ -206,7 +217,7 @@ export function FocusAreas() {
                       project={project}
                       milestones={items}
                       pillar={pillar}
-                      selectedOwners={selectedOwners}
+                      selectedPersons={selectedPersons}
                     />
                   ))}
                 </div>
@@ -238,7 +249,6 @@ function SprintRuler() {
   const todayPct   = toPct(today.toISOString().split('T')[0])
   const todayInRange = today.getTime() >= start && today.getTime() <= end
 
-  // Month labels every 2 months
   const months: { label: string; pct: number }[] = []
   const cursor = new Date(RULER_START)
   cursor.setDate(1)
@@ -274,11 +284,11 @@ function SprintRuler() {
                   {s.milestones.map((m, j) => (
                     <div
                       key={j}
-                      title={`${m.title} (${m.owner || m.pillar})`}
+                      title={`${m.title} (${[m.person1, m.person2].filter(Boolean).join(' & ')})`}
                       className={cn(
                         'rounded-full cursor-help transition-transform hover:scale-150',
                         PILLAR_CONFIG[m.pillar].dot,
-                        m.done ? 'opacity-100' : 'opacity-40'
+                        m.status === 'done' ? 'opacity-100' : m.status === 'in_progress' ? 'opacity-70' : 'opacity-40'
                       )}
                       style={{ width: '7px', height: '7px' }}
                     />
@@ -328,20 +338,19 @@ function SprintRuler() {
   )
 }
 
-function ProjectGroup({ project, milestones, pillar, selectedOwners }: {
+function ProjectGroup({ project, milestones, pillar, selectedPersons }: {
   project: string
   milestones: Milestone[]
   pillar: Pillar
-  selectedOwners: Set<string>
+  selectedPersons: Set<string>
 }) {
   const c = PILLAR_CONFIG[pillar]
-  const doneCount = milestones.filter(m => m.done).length
-  const isFiltered = selectedOwners.size > 0
+  const doneCount = milestones.filter(m => m.status === 'done').length
+  const isFiltered = selectedPersons.size > 0
   const visibleCount = isFiltered
-    ? milestones.filter(m => m.owner && selectedOwners.has(m.owner)).length
+    ? milestones.filter(m => milestoneMatchesPerson(m, selectedPersons)).length
     : milestones.length
 
-  // Hide entire group if filter is active and no items match
   if (isFiltered && visibleCount === 0) return null
 
   return (
@@ -357,7 +366,7 @@ function ProjectGroup({ project, milestones, pillar, selectedOwners }: {
           <MilestoneItem
             key={i}
             milestone={m}
-            visible={!isFiltered || (!!m.owner && selectedOwners.has(m.owner))}
+            visible={!isFiltered || milestoneMatchesPerson(m, selectedPersons)}
           />
         ))}
       </ul>
@@ -381,49 +390,76 @@ function MilestoneItem({ milestone, visible = true }: { milestone: Milestone; vi
     <>
       <li className={cn(
         'transition-all duration-300 ease-in-out overflow-hidden',
-        visible ? 'opacity-100 max-h-32' : 'opacity-0 max-h-0 pointer-events-none'
+        visible ? 'opacity-100 max-h-64' : 'opacity-0 max-h-0 pointer-events-none'
       )}>
         <button
           onClick={() => setOpen(true)}
           className={cn(
             'w-full flex items-start gap-2.5 px-3 py-2.5 rounded-xl border text-left transition-all group',
-            milestone.done
+            milestone.status === 'done'
               ? `bg-gradient-to-br ${meta.gradient} border-transparent shadow-sm`
-              : 'bg-white border-border hover:shadow-sm'
+              : milestone.status === 'in_progress'
+                ? `${c.bg} border-dashed ${c.border} hover:shadow-sm`
+                : 'bg-white border-border hover:shadow-sm'
           )}
         >
-          {milestone.done
+          {milestone.status === 'done'
             ? <CheckCircle2 className="w-4 h-4 text-white flex-shrink-0 mt-0.5" />
-            : <Circle className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: c.iconColor }} />
+            : milestone.status === 'in_progress'
+              ? <Clock className="w-4 h-4 flex-shrink-0 mt-0.5 animate-pulse" style={{ color: c.iconColor }} />
+              : <Circle className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: c.iconColor }} />
           }
           <div className="flex-1 min-w-0">
+            {milestone.status === 'done' && (
+              <span className="text-[9px] font-bold uppercase tracking-widest block mb-0.5 text-white/80">
+                ✓ Done
+              </span>
+            )}
+            {milestone.status === 'in_progress' && (
+              <span className={cn('text-[9px] font-bold uppercase tracking-widest block mb-0.5', c.text)}>
+                ⟳ In Progress
+              </span>
+            )}
             <span className={cn(
               'text-sm leading-snug block',
-              milestone.done ? 'text-white font-semibold' : 'text-foreground font-medium'
+              milestone.status === 'done' ? 'text-white font-semibold' : 'text-foreground font-medium'
             )}>
               {milestone.title}
             </span>
             <div className={cn(
               'flex items-center gap-2 mt-1.5',
-              milestone.done ? 'text-white/70' : 'text-muted-foreground/70'
+              milestone.status === 'done' ? 'text-white/70' : 'text-muted-foreground/70'
             )}>
               <span className={cn(
                 'text-[13px] font-black tracking-tight',
-                milestone.done ? 'text-white' : 'text-foreground/80'
+                milestone.status === 'done' ? 'text-white' : 'text-foreground/80'
               )}>
                 {sprintTag}
               </span>
               <span className="text-[10px] font-medium">
                 {formatSprintDate(milestone.sprintStartDate)} – {formatSprintDate(milestone.sprintEndDate)}
               </span>
-              {milestone.owner && (
-                <span className="text-[10px] font-medium opacity-80">· {milestone.owner}</span>
-              )}
             </div>
+            {(milestone.person1 || milestone.person2) && (
+              <div className="flex flex-col gap-0.5 mt-1.5">
+                {milestone.person1 && (
+                  <span className={cn('text-xs font-bold', milestone.status === 'done' ? 'text-white/90' : 'text-foreground')}>
+                    {milestone.person1}
+                    <span className={cn('text-[9px] font-semibold ml-1', milestone.status === 'done' ? 'text-white/50' : 'text-muted-foreground')}>Owner</span>
+                  </span>
+                )}
+                {milestone.person2 && (
+                  <span className={cn('text-xs font-bold', milestone.status === 'done' ? 'text-white/90' : 'text-foreground')}>
+                    {milestone.person2}
+                    <span className={cn('text-[9px] font-semibold ml-1', milestone.status === 'done' ? 'text-white/50' : 'text-muted-foreground')}>Copilot</span>
+                  </span>
+                )}
+              </div>
+            )}
           </div>
           <ChevronRight className={cn(
             'w-3.5 h-3.5 flex-shrink-0 mt-0.5 transition-colors',
-            milestone.done
+            milestone.status === 'done'
               ? 'text-white/50 group-hover:text-white/90'
               : 'text-muted-foreground/30 group-hover:text-muted-foreground'
           )} />
@@ -437,33 +473,41 @@ function MilestoneItem({ milestone, visible = true }: { milestone: Milestone; vi
 function MilestoneModal({ milestone, onClose }: { milestone: Milestone; onClose: () => void }) {
   const c = PILLAR_CONFIG[milestone.pillar]
   const meta = PILLAR_META[milestone.pillar]
+  const who = [milestone.person1, milestone.person2].filter(Boolean).join(' & ')
+  const sprintTag = milestone.sprintLabel.startsWith('IP') ? 'IP Week' : `S${milestone.sprintLabel}`
+  const isDone = milestone.status === 'done'
+  const isInProgress = milestone.status === 'in_progress'
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm"
+      className="fixed inset-0 z-[100] flex items-start justify-center pt-16 p-6 bg-black/40 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
         className="relative bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden"
         onClick={e => e.stopPropagation()}
       >
+        {/* Header */}
         <div className={cn(
           'px-6 py-5 border-b',
-          milestone.done
+          isDone
             ? `bg-gradient-to-r ${meta.gradient}`
-            : cn(c.bg, c.border)
+            : isInProgress
+              ? `${c.bg} border-dashed ${c.border}`
+              : cn(c.bg, c.border)
         )}>
           <div className="flex items-start justify-between gap-4">
             <div>
-              {milestone.done && (
-                <div className="text-[10px] font-bold uppercase tracking-widest mb-1 text-white/70">
-                  ✓ Completed
-                </div>
+              {isDone && (
+                <div className="text-[10px] font-bold uppercase tracking-widest mb-1 text-white/70">✓ Completed</div>
               )}
-              <p className={cn('text-[11px] font-semibold mb-1', milestone.done ? 'text-white/70' : c.text)}>
+              {isInProgress && (
+                <div className={cn('text-[10px] font-bold uppercase tracking-widest mb-1', c.text)}>⟳ In Progress</div>
+              )}
+              <p className={cn('text-[11px] font-semibold mb-1', isDone ? 'text-white/70' : c.text)}>
                 {milestone.pillar} · {milestone.project}
               </p>
-              <h3 className={cn('text-lg font-extrabold leading-snug', milestone.done ? 'text-white' : 'text-foreground')}>
+              <h3 className={cn('text-lg font-extrabold leading-snug', isDone ? 'text-white' : 'text-foreground')}>
                 {milestone.title}
               </h3>
             </div>
@@ -471,17 +515,41 @@ function MilestoneModal({ milestone, onClose }: { milestone: Milestone; onClose:
               onClick={onClose}
               className={cn(
                 'flex-shrink-0 p-1.5 rounded-lg transition-colors',
-                milestone.done ? 'text-white/70 hover:text-white hover:bg-white/20' : 'text-muted-foreground hover:bg-muted'
+                isDone ? 'text-white/70 hover:text-white hover:bg-white/20' : 'text-muted-foreground hover:bg-muted'
               )}
             >
               <X className="w-4 h-4" />
             </button>
           </div>
         </div>
-        <div className="px-6 py-6">
-          <div className="text-sm text-muted-foreground italic text-center py-8 border border-dashed border-border rounded-xl bg-muted/30">
-            Details coming soon — TBD
-          </div>
+
+        {/* Meta strip */}
+        <div className="px-6 pt-4 pb-2 flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-muted-foreground border-b border-border/60">
+          <span className="flex items-center gap-1.5 font-semibold text-foreground">
+            <CalendarDays className="w-3.5 h-3.5" />
+            {sprintTag}
+          </span>
+          <span className="flex items-center gap-1">
+            {formatSprintDate(milestone.sprintStartDate)} – {formatSprintDate(milestone.sprintEndDate)}
+          </span>
+          {who && (
+            <span className="flex items-center gap-1">
+              👤 {who}
+            </span>
+          )}
+        </div>
+
+        {/* Body */}
+        <div className="px-6 py-5">
+          {milestone.details ? (
+            <p className="text-sm text-foreground/80 leading-relaxed">
+              {milestone.details.replace(/;/g, ',')}
+            </p>
+          ) : (
+            <div className="text-sm text-muted-foreground italic text-center py-8 border border-dashed border-border rounded-xl bg-muted/30">
+              Details coming soon — TBD
+            </div>
+          )}
         </div>
       </div>
     </div>

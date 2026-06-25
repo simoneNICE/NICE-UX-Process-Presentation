@@ -1,4 +1,4 @@
-import { CheckCircle2, Circle, ChevronRight, X } from 'lucide-react'
+import { CheckCircle2, Circle, Clock, ChevronRight, X, CalendarDays } from 'lucide-react'
 import { useState } from 'react'
 import { sprints } from '@/data/milestones'
 import { PillarBadge, PILLAR_CONFIG } from '@/components/PillarBadge'
@@ -23,7 +23,7 @@ function getProgress() {
   const start = new Date('2026-05-26')
   const end = new Date('2026-12-15')
   const pct = Math.min(100, Math.max(0, ((today.getTime() - start.getTime()) / (end.getTime() - start.getTime())) * 100))
-  const done = sprints.flatMap(s => s.milestones).filter(m => m.done).length
+  const done = sprints.flatMap(s => s.milestones).filter(m => m.status === 'done').length
   const total = sprints.flatMap(s => s.milestones).filter(m => m.title).length
   return { pct: Math.round(pct), done, total }
 }
@@ -121,7 +121,7 @@ function TodayIndicator({ dateColClass }: { dateColClass: string }) {
 }
 
 function SprintRow({ sprint }: { sprint: SprintRowType }) {
-  const allDone = sprint.milestones.length > 0 && sprint.milestones.every(m => m.done)
+  const allDone = sprint.milestones.length > 0 && sprint.milestones.every(m => m.status === 'done')
 
   const dotClass = cn(
     'rounded-full z-10 flex-shrink-0 shadow-sm transition-all -translate-x-1/2',
@@ -147,7 +147,7 @@ function SprintRow({ sprint }: { sprint: SprintRowType }) {
             'text-[10px]',
             sprint.ipWeek ? 'text-blue-400 font-semibold italic' : 'text-muted-foreground'
           )}>
-            {sprint.ipWeek ? 'IP Week' : sprint.sprint}
+            {sprint.ipWeek ? `IP Week ${new Date(sprint.endDate).getFullYear()}` : sprint.sprint}
           </span>
         </div>
       </div>
@@ -184,18 +184,24 @@ function MilestoneChip({ milestone }: { milestone: Milestone }) {
 
   return (
     <>
-      {milestone.done ? (
-        <DoneChip milestone={milestone} onClick={() => setOpen(true)} />
-      ) : (
-        <PendingChip milestone={milestone} onClick={() => setOpen(true)} />
-      )}
+      {milestone.status === 'done'
+        ? <DoneChip milestone={milestone} onClick={() => setOpen(true)} />
+        : milestone.status === 'in_progress'
+          ? <InProgressChip milestone={milestone} onClick={() => setOpen(true)} />
+          : <PendingChip milestone={milestone} onClick={() => setOpen(true)} />
+      }
       {open && <MilestoneModal milestone={milestone} onClose={() => setOpen(false)} />}
     </>
   )
 }
 
+function persons(m: Milestone): string {
+  return [m.person1, m.person2].filter(Boolean).join(' & ')
+}
+
 function DoneChip({ milestone, onClick }: { milestone: Milestone; onClick: () => void }) {
   const ds = DONE_STYLES[milestone.pillar]
+  const who = persons(milestone)
   return (
     <button
       onClick={onClick}
@@ -207,12 +213,13 @@ function DoneChip({ milestone, onClick }: { milestone: Milestone; onClick: () =>
       <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent pointer-events-none" />
       <CheckCircle2 className="w-5 h-5 text-white flex-shrink-0 mt-0.5 drop-shadow" />
       <div className="flex-1 min-w-0">
-        <div className={cn('text-[10px] font-bold uppercase tracking-widest mb-1', ds.subtext)}>✓ Done</div>
+        <div className={cn('text-[9px] font-bold uppercase tracking-widest mb-1', ds.subtext)}>✓ Done</div>
         <p className="text-sm font-bold leading-snug text-white">{milestone.title}</p>
         <div className="mt-1.5 inline-flex items-center gap-1.5 text-xs font-semibold px-2 py-0.5 rounded-full border bg-white/20 border-white/30 text-white">
           <span className="w-1.5 h-1.5 rounded-full bg-white/80 flex-shrink-0" />
           {milestone.pillar}
         </div>
+        {who && <div className={cn('text-[10px] mt-1', ds.subtext)}>{who}</div>}
       </div>
       <ChevronRight className="w-4 h-4 text-white/50 flex-shrink-0 mt-0.5 group-hover:text-white/90 transition-colors" />
     </button>
@@ -221,6 +228,7 @@ function DoneChip({ milestone, onClick }: { milestone: Milestone; onClick: () =>
 
 function PendingChip({ milestone, onClick }: { milestone: Milestone; onClick: () => void }) {
   const c = PILLAR_CONFIG[milestone.pillar]
+  const who = persons(milestone)
   return (
     <button
       onClick={onClick}
@@ -233,19 +241,54 @@ function PendingChip({ milestone, onClick }: { milestone: Milestone; onClick: ()
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold leading-snug text-foreground">{milestone.title}</p>
         <PillarBadge pillar={milestone.pillar} className="mt-1.5" />
+        {who && <div className="text-[10px] text-muted-foreground mt-1">{who}</div>}
       </div>
       <ChevronRight className="w-4 h-4 text-muted-foreground/40 flex-shrink-0 mt-0.5 group-hover:text-muted-foreground transition-colors" />
     </button>
   )
 }
 
+function InProgressChip({ milestone, onClick }: { milestone: Milestone; onClick: () => void }) {
+  const c = PILLAR_CONFIG[milestone.pillar]
+  const who = persons(milestone)
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        'flex items-start gap-3 px-4 py-3 rounded-xl border border-dashed shadow-sm transition-all hover:shadow-md hover:scale-[1.02] w-full text-left cursor-pointer group',
+        c.bg, c.border
+      )}
+    >
+      <Clock className="w-5 h-5 flex-shrink-0 mt-0.5 animate-pulse" style={{ color: c.iconColor }} />
+      <div className="flex-1 min-w-0">
+        <div className={cn('text-[9px] font-bold uppercase tracking-widest mb-1', c.text)}>⟳ In Progress</div>
+        <p className="text-sm font-semibold leading-snug text-foreground">{milestone.title}</p>
+        <div className={cn('flex items-center gap-1.5 mt-1.5 text-xs font-semibold px-2 py-0.5 rounded-full border inline-flex w-fit', c.bg, c.border, c.text)}>
+          <span className={cn('w-1.5 h-1.5 rounded-full flex-shrink-0', c.dot)} />
+          {milestone.pillar}
+        </div>
+        {who && <div className="text-[10px] text-muted-foreground mt-1">{who}</div>}
+      </div>
+      <ChevronRight className="w-4 h-4 text-muted-foreground/40 flex-shrink-0 mt-0.5 group-hover:text-muted-foreground transition-colors" />
+    </button>
+  )
+}
+
+function formatSprintDate(iso: string) {
+  return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+}
+
 function MilestoneModal({ milestone, onClose }: { milestone: Milestone; onClose: () => void }) {
   const c = PILLAR_CONFIG[milestone.pillar]
   const ds = DONE_STYLES[milestone.pillar]
+  const who = persons(milestone)
+  const isDone = milestone.status === 'done'
+  const isInProgress = milestone.status === 'in_progress'
+  const sprintTag = milestone.sprintLabel.startsWith('IP') ? 'IP Week' : `S${milestone.sprintLabel}`
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm"
+      className="fixed inset-0 z-[100] flex items-start justify-center pt-16 p-6 bg-black/40 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
@@ -255,35 +298,34 @@ function MilestoneModal({ milestone, onClose }: { milestone: Milestone; onClose:
         {/* Header strip */}
         <div className={cn(
           'px-6 py-5',
-          milestone.done
+          isDone
             ? cn('bg-gradient-to-r', ds.card)
-            : cn('border-b', c.bg, c.border)
+            : isInProgress
+              ? cn('border-b border-dashed', c.bg, c.border)
+              : cn('border-b', c.bg, c.border)
         )}>
           <div className="flex items-start justify-between gap-4">
             <div>
-              {milestone.done && (
+              {isDone && (
                 <div className={cn('text-[10px] font-bold uppercase tracking-widest mb-1', ds.subtext)}>
                   ✓ Completed
                 </div>
               )}
-              <h3 className={cn('text-lg font-extrabold leading-snug', milestone.done ? 'text-white' : 'text-foreground')}>
+              {isInProgress && (
+                <div className={cn('text-[10px] font-bold uppercase tracking-widest mb-1', c.text)}>⟳ In Progress</div>
+              )}
+              <p className={cn('text-[11px] font-semibold mb-1', isDone ? 'text-white/70' : c.text)}>
+                {milestone.pillar} · {milestone.project}
+              </p>
+              <h3 className={cn('text-lg font-extrabold leading-snug', isDone ? 'text-white' : 'text-foreground')}>
                 {milestone.title}
               </h3>
-              <div className={cn(
-                'mt-2 inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border',
-                milestone.done
-                  ? 'bg-white/20 border-white/30 text-white'
-                  : cn(c.bg, c.border, c.text)
-              )}>
-                <span className={cn('w-1.5 h-1.5 rounded-full flex-shrink-0', milestone.done ? 'bg-white/80' : c.dot)} />
-                {milestone.pillar}
-              </div>
             </div>
             <button
               onClick={onClose}
               className={cn(
                 'flex-shrink-0 p-1.5 rounded-lg transition-colors',
-                milestone.done ? 'text-white/70 hover:text-white hover:bg-white/20' : 'text-muted-foreground hover:bg-muted'
+                isDone ? 'text-white/70 hover:text-white hover:bg-white/20' : 'text-muted-foreground hover:bg-muted'
               )}
             >
               <X className="w-4 h-4" />
@@ -291,11 +333,27 @@ function MilestoneModal({ milestone, onClose }: { milestone: Milestone; onClose:
           </div>
         </div>
 
+        {/* Meta strip */}
+        <div className="px-6 pt-4 pb-2 flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-muted-foreground border-b border-border/60">
+          <span className="flex items-center gap-1.5 font-semibold text-foreground">
+            <CalendarDays className="w-3.5 h-3.5" />
+            {sprintTag}
+          </span>
+          <span>{formatSprintDate(milestone.sprintStartDate)} – {formatSprintDate(milestone.sprintEndDate)}</span>
+          {who && <span>👤 {who}</span>}
+        </div>
+
         {/* Body */}
-        <div className="px-6 py-6 space-y-4">
-          <div className="text-sm text-muted-foreground italic text-center py-8 border border-dashed border-border rounded-xl bg-muted/30">
-            Details coming soon — TBD
-          </div>
+        <div className="px-6 py-5">
+          {milestone.details ? (
+            <p className="text-sm text-foreground/80 leading-relaxed">
+              {milestone.details.replace(/;/g, ',')}
+            </p>
+          ) : (
+            <div className="text-sm text-muted-foreground italic text-center py-8 border border-dashed border-border rounded-xl bg-muted/30">
+              Details coming soon — TBD
+            </div>
+          )}
         </div>
       </div>
     </div>

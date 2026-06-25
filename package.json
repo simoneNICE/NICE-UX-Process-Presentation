@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "sync": "python3 scripts/xls_to_csv.py"
   },
   "dependencies": {
     "react": "^19.0.0",

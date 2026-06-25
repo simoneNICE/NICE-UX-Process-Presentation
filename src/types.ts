@@ -1,14 +1,17 @@
 export type Pillar = 'Knowledge' | 'Efficiency' | 'Governance'
 
+export type MilestoneStatus = 'todo' | 'in_progress' | 'done'
+
 export interface Milestone {
   pillar: Pillar
   project: string
   title: string
-  done: boolean
+  status: MilestoneStatus
   sprintLabel: string
   sprintStartDate: string
   sprintEndDate: string
-  owner: string
+  person1: string
+  person2: string
   details: string
 }
 
