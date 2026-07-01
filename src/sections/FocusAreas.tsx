@@ -184,7 +184,7 @@ export function FocusAreas() {
                 {/* Pillar header */}
                 <div className="px-6 pt-6 pb-5">
                   <div className="text-3xl mb-3">{meta.icon}</div>
-                  <h3 className="text-xl font-extrabold text-foreground mb-1">{pillar}</h3>
+                  <h3 className="text-2xl font-black text-foreground mb-1 tracking-tight">{pillar}</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed mb-4">{meta.description}</p>
 
                   {/* Per-pillar progress */}
@@ -451,7 +451,7 @@ function MilestoneItem({ milestone, visible = true }: { milestone: Milestone; vi
                 {milestone.person2 && (
                   <span className={cn('text-xs font-bold', milestone.status === 'done' ? 'text-white/90' : 'text-foreground')}>
                     {milestone.person2}
-                    <span className={cn('text-[9px] font-semibold ml-1', milestone.status === 'done' ? 'text-white/50' : 'text-muted-foreground')}>Copilot</span>
+                    <span className={cn('text-[9px] font-semibold ml-1', milestone.status === 'done' ? 'text-white/50' : 'text-muted-foreground')}>Assistant</span>
                   </span>
                 )}
               </div>
