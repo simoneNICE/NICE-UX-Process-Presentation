@@ -1,4 +1,4 @@
-# SESSION_LOG — UX Process Pillar
+# SESSION_LOG — NICE UX Process Pillar
 
 > Punto di contatto tra sessioni Claude Code.
 > Claude Code aggiorna questo file. Claude (chat) lo legge per aggiornare wiki e roadmap.

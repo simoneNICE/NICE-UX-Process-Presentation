@@ -14,7 +14,7 @@ function parseCSV(csv: string): SprintRow[] {
   let prevEndDate = ''
 
   for (const line of lines) {
-    const [sprint, end_date, ip_week, pillar, person1, person2, project, title, done, details] = line.split(',')
+    const [sprint, end_date, ip_week, pillar, person1, person2, project, project_description, goal, kpi, title, done, details] = line.split(',')
     const key = `${sprint}-${end_date}`
 
     if (!sprintMap.has(key)) {
@@ -35,6 +35,9 @@ function parseCSV(csv: string): SprintRow[] {
       sprintMap.get(key)!.milestones.push({
         pillar: pillar as Pillar,
         project,
+        projectDescription: project_description?.trim() ?? '',
+        goal: goal?.trim() ?? '',
+        kpi: kpi?.trim() ?? '',
         title,
         status: done?.trim() === 'done' ? 'done' : done?.trim() === 'in_progress' ? 'in_progress' : 'todo',
         sprintLabel: sprint,

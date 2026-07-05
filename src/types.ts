@@ -5,6 +5,9 @@ export type MilestoneStatus = 'todo' | 'in_progress' | 'done'
 export interface Milestone {
   pillar: Pillar
   project: string
+  projectDescription: string
+  goal: string
+  kpi: string
   title: string
   status: MilestoneStatus
   sprintLabel: string

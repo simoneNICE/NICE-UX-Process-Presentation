@@ -1,4 +1,4 @@
-# Changelog — UX Process Pillar
+# Changelog — NICE UX Process Pillar
 
 > Aggiornato dopo ogni feature o fix. Scritto per l'utente finale, non per il developer.
 

@@ -1,4 +1,4 @@
-# Design System — UX Process Pillar
+# Design System — NICE UX Process Pillar
 
 > Fonte di verità per componenti e pattern UI/UX.
 > Definito da AGENT_UX, implementato da AGENT_DEV.

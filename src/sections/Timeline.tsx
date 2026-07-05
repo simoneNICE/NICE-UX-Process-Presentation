@@ -1,5 +1,5 @@
 import { CheckCircle2, Circle, Clock, ChevronRight, X, CalendarDays } from 'lucide-react'
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import { sprints } from '@/data/milestones'
 import { PillarBadge, PILLAR_CONFIG } from '@/components/PillarBadge'
 import { cn } from '@/lib/utils'
@@ -158,11 +158,19 @@ function SprintRow({ sprint }: { sprint: SprintRowType }) {
       {/* Cards */}
       <div className="flex-1 pl-6 flex flex-row flex-wrap gap-2 content-start">
         {sprint.milestones.length > 0 ? (
-          sprint.milestones.map((m, idx) => (
-            <div key={idx} className="w-[calc(33.333%-6px)] min-w-[160px]">
-              <MilestoneChip milestone={m} />
-            </div>
-          ))
+          sprint.milestones.map((m, idx) => {
+            const isNewProject = idx > 0 && m.project !== sprint.milestones[idx - 1].project
+            return (
+              <Fragment key={idx}>
+                {isNewProject && (
+                  <div className="w-full h-px my-1 bg-border" aria-hidden="true" />
+                )}
+                <div className="w-[calc(33.333%-6px)] min-w-[160px]">
+                  <MilestoneChip milestone={m} />
+                </div>
+              </Fragment>
+            )
+          })
         ) : (
           <div className="flex items-center h-9 px-4 rounded-xl border border-dashed border-border">
             <span className="text-xs text-muted-foreground/50 italic">No milestones</span>

@@ -1,4 +1,4 @@
-# UX Process Pillar — Istruzioni per Claude Code
+# NICE UX Process Pillar — Istruzioni per Claude Code
 
 ## Contesto
 - Stack: React + Vite + TypeScript + shadcn/ui + Tailwind CSS

@@ -353,13 +353,71 @@ function ProjectGroup({ project, milestones, pillar, selectedPersons }: {
 
   if (isFiltered && visibleCount === 0) return null
 
+  const first = milestones[0]
+  const description = first?.projectDescription
+  const goal        = first?.goal
+  const kpi         = first?.kpi
+
+  // Timing — calculated from milestone sprint dates
+  const allDates = milestones.flatMap(m => [m.sprintStartDate, m.sprintEndDate]).filter(Boolean)
+  const startDate = allDates.length ? allDates.reduce((a, b) => a < b ? a : b) : ''
+  const endDate   = allDates.length ? allDates.reduce((a, b) => a > b ? a : b) : ''
+  const durationWeeks = startDate && endDate
+    ? Math.round((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24 * 7))
+    : 0
+  const durationLabel = durationWeeks >= 8
+    ? `${Math.round(durationWeeks / 4.3)} months`
+    : `${durationWeeks} weeks`
+
   return (
     <div>
-      <div className="flex items-center justify-between mb-2">
-        <h4 className="text-sm font-bold text-foreground">{project}</h4>
+      <div className="flex items-center justify-between mb-1">
+        <h4 className="text-lg font-extrabold text-foreground">{project}</h4>
         <span className={cn('text-[10px] font-semibold px-2 py-0.5 rounded-full border transition-all duration-300', c.bg, c.text, c.border)}>
           {isFiltered ? `${visibleCount}/` : ''}{doneCount}/{milestones.length}
         </span>
+      </div>
+
+      {(description || goal || kpi) && (
+        <div className="mb-5 space-y-4">
+          {description && (
+            <p className="text-sm text-foreground/70 leading-relaxed">{description.replace(/;/g, ',')}</p>
+          )}
+          {(goal || kpi) && (
+            <div className="space-y-3">
+              {goal && (
+                <div className="space-y-1">
+                  <span className={cn('text-[10px] font-bold uppercase tracking-widest block', c.text)}>Goal</span>
+                  <p className="text-sm text-foreground/80 leading-relaxed">{goal.replace(/;/g, ',')}</p>
+                </div>
+              )}
+              {kpi && (
+                <div className="space-y-1">
+                  <span className={cn('text-[10px] font-bold uppercase tracking-widest block', c.text)}>KPI</span>
+                  <p className="text-sm text-foreground/80 leading-relaxed">{kpi.replace(/;/g, ',')}</p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {startDate && endDate && (
+        <div className="mb-5 space-y-1">
+          <span className={cn('text-[10px] font-bold uppercase tracking-widest block', c.text)}>Timeline</span>
+          <div className="flex items-center gap-2 text-sm text-foreground/80">
+            <span className="font-medium">{formatSprintDate(startDate)}</span>
+            <span className="text-muted-foreground">→</span>
+            <span className="font-medium">{formatSprintDate(endDate)}</span>
+            <span className={cn('text-[10px] font-semibold px-2 py-0.5 rounded-full border ml-1', c.bg, c.text, c.border)}>
+              {durationLabel}
+            </span>
+          </div>
+        </div>
+      )}
+
+      <div className="mb-2">
+        <span className={cn('text-[10px] font-bold uppercase tracking-widest', c.text)}>Steps</span>
       </div>
       <ul className="space-y-1.5">
         {milestones.map((m, i) => (

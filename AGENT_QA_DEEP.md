@@ -1,4 +1,4 @@
-# QA Profondo — UX Process Pillar (lanciato a fine release)
+# QA Profondo — NICE UX Process Pillar (lanciato a fine release)
 
 ## Filosofia
 Ricerca attiva e proattiva di problemi.

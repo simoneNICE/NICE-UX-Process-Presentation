@@ -53,12 +53,15 @@ def parse_sheet(wb, sheet_name):
     idx_sprint  = col('sprint')   if col('sprint')   is not None else 0
     idx_date    = col('end_date') if col('end_date')  is not None else 1
     idx_ip      = col('ip_week')  if col('ip_week')   is not None else 2
-    idx_p1      = col('person 1')
-    idx_p2      = col('person 2')
-    idx_project = col('project')
-    idx_title   = col('title')
-    idx_done    = col('done')
-    idx_details = col('details')
+    idx_p1          = col('person 1')
+    idx_p2          = col('person 2')
+    idx_project     = col('project')
+    idx_project_desc= col('project_description') or col('project description')
+    idx_goal        = col('goal')
+    idx_kpi         = col('kpi')
+    idx_title       = col('title')
+    idx_done        = col('done')
+    idx_details     = col('details')
 
     def get(row, i):
         return sanitize(row[i]) if i is not None and i < len(row) else ''
@@ -82,8 +85,11 @@ def parse_sheet(wb, sheet_name):
         if person1 and person1 == person2:
             person2 = ''
 
-        project = get(row, idx_project)
-        title   = get(row, idx_title)
+        project      = get(row, idx_project)
+        project_desc = get(row, idx_project_desc)
+        goal         = get(row, idx_goal)
+        kpi          = get(row, idx_kpi)
+        title        = get(row, idx_title)
         raw_done = row[idx_done] if idx_done is not None and idx_done < len(row) else 0
         done    = parse_done(raw_done)
         details = get(row, idx_details)
@@ -96,6 +102,9 @@ def parse_sheet(wb, sheet_name):
             'person1': person1,
             'person2': person2,
             'project': project,
+            'project_description': project_desc,
+            'goal': goal,
+            'kpi': kpi,
             'title': title,
             'done': done,
             'details': details,
@@ -132,13 +141,26 @@ def main():
     # Raccoglie milestone per sprint
     all_rows_by_sprint: dict = {f"{s}|{d}": [] for s, d in sprint_order}
 
+    # Raccoglie descrizioni per progetto (prima non vuota per ogni pillar+project)
+    project_descriptions: dict = {}
+
     for pillar in PILLARS:
         for m in parse_sheet(wb, pillar):
             key = f"{m['sprint']}|{m['end_date']}"
             if key not in all_rows_by_sprint:
                 all_rows_by_sprint[key] = []
             if m['title']:
+                proj_key = f"{m['pillar']}|{m['project']}"
+                if m['project_description'] and proj_key not in project_descriptions:
+                    project_descriptions[proj_key] = m['project_description']
                 all_rows_by_sprint[key].append(m)
+
+    # Propaga descrizione mancante dalle altre righe dello stesso progetto
+    for key, milestones in all_rows_by_sprint.items():
+        for m in milestones:
+            proj_key = f"{m['pillar']}|{m['project']}"
+            if not m['project_description'] and proj_key in project_descriptions:
+                m['project_description'] = project_descriptions[proj_key]
 
     # Scrivi CSV
     rows_out = []
@@ -151,20 +173,21 @@ def main():
                 rows_out.append([
                     sprint_label, end_date, ip_week,
                     m['pillar'], m['person1'], m['person2'],
-                    m['project'], m['title'], m['done'], m['details']
+                    m['project'], m['project_description'], m['goal'], m['kpi'],
+                    m['title'], m['done'], m['details']
                 ])
         else:
-            rows_out.append([sprint_label, end_date, ip_week, '', '', '', '', '', '', ''])
+            rows_out.append([sprint_label, end_date, ip_week, '', '', '', '', '', '', '', '', '', ''])
 
     with open(CSV_PATH, 'w', newline='', encoding='utf-8') as f:
         writer = csv.writer(f)
-        writer.writerow(['sprint', 'end_date', 'ip_week', 'pillar', 'person1', 'person2', 'project', 'title', 'done', 'details'])
+        writer.writerow(['sprint', 'end_date', 'ip_week', 'pillar', 'person1', 'person2', 'project', 'project_description', 'goal', 'kpi', 'title', 'done', 'details'])
         writer.writerows(rows_out)
 
     print(f'✅ Generato {CSV_PATH}')
-    total = len([r for r in rows_out if r[7]])
-    done  = len([r for r in rows_out if r[7] and r[8] == 'done'])
-    wip   = len([r for r in rows_out if r[7] and r[8] == 'in_progress'])
+    total = len([r for r in rows_out if r[10]])
+    done  = len([r for r in rows_out if r[10] and r[11] == 'done'])
+    wip   = len([r for r in rows_out if r[10] and r[11] == 'in_progress'])
     print(f'   {total} milestone: {done} done, {wip} in progress, {total-done-wip} todo')
 
 
