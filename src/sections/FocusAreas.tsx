@@ -1,6 +1,7 @@
 import { CheckCircle2, Circle, Clock, ChevronRight, X, CalendarDays } from 'lucide-react'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import { milestones } from '@/data/milestones'
+import { getProjectMeta } from '@/data/jira-projects'
 import { PILLAR_CONFIG } from '@/components/PillarBadge'
 import { cn } from '@/lib/utils'
 import type { Pillar, Milestone } from '@/types'
@@ -234,12 +235,25 @@ function ProjectGroup({ project, milestones, pillar, selectedPersons }: {
   const description = first?.projectDescription
   const goal = first?.goal
   const kpi = first?.kpi
+  const epicKey = getProjectMeta(pillar, project)?.epicKey
 
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
-        <h4 className="text-lg font-extrabold text-foreground">{project}</h4>
-        <span className={cn('text-[10px] font-semibold px-2 py-0.5 rounded-full border transition-all duration-300', c.bg, c.text, c.border)}>
+        <div className="flex items-center gap-2 min-w-0">
+          <h4 className="text-lg font-extrabold text-foreground truncate">{project}</h4>
+          {epicKey && (
+            <a
+              href={`https://nice-ce-cxone-prod.atlassian.net/browse/${epicKey}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[10px] font-semibold text-blue-400 hover:text-blue-600 hover:underline flex-shrink-0"
+            >
+              {epicKey} ↗
+            </a>
+          )}
+        </div>
+        <span className={cn('text-[10px] font-semibold px-2 py-0.5 rounded-full border transition-all duration-300 flex-shrink-0 ml-2', c.bg, c.text, c.border)}>
           {isFiltered ? `${visibleCount}/` : ''}{doneCount}/{milestones.length}
         </span>
       </div>
@@ -247,14 +261,14 @@ function ProjectGroup({ project, milestones, pillar, selectedPersons }: {
       {(description || goal || kpi) && (
         <div className="mb-5 space-y-4">
           {description && (
-            <p className="text-sm text-foreground/70 leading-relaxed">{description}</p>
+            <ExpandableText text={description} className="text-sm text-foreground/70 leading-relaxed" />
           )}
           {(goal || kpi) && (
             <div className="space-y-3">
               {goal && (
                 <div className="space-y-1">
                   <span className={cn('text-[10px] font-bold uppercase tracking-widest block', c.text)}>Goal</span>
-                  <p className="text-sm text-foreground/80 leading-relaxed">{goal}</p>
+                  <ExpandableText text={goal} className="text-sm text-foreground/80 leading-relaxed" />
                 </div>
               )}
               {kpi && (
@@ -367,6 +381,32 @@ function MilestoneItem({ milestone, visible = true }: { milestone: Milestone; vi
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+}
+
+function ExpandableText({ text, className }: { text: string; className?: string }) {
+  const [expanded, setExpanded] = useState(false)
+  const [overflows, setOverflows] = useState(false)
+  const ref = useRef<HTMLParagraphElement>(null)
+
+  useEffect(() => {
+    if (ref.current) setOverflows(ref.current.scrollHeight > ref.current.clientHeight + 1)
+  }, [text])
+
+  return (
+    <div>
+      <p ref={ref} className={cn(className, !expanded && 'line-clamp-3')}>
+        {text}
+      </p>
+      {(overflows || expanded) && (
+        <button
+          onClick={() => setExpanded(e => !e)}
+          className="text-[11px] font-semibold text-blue-500 hover:underline mt-1 block"
+        >
+          {expanded ? 'Read less ↑' : 'Read more ↓'}
+        </button>
+      )}
+    </div>
+  )
 }
 
 function MilestoneModal({ milestone, onClose }: { milestone: Milestone; onClose: () => void }) {
