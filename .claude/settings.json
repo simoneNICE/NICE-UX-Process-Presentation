@@ -1,7 +1,23 @@
 {
   "permissions": {
     "allow": [
-      "Bash(python3 scripts/xls_to_csv.py)"
+      "Bash(python3 scripts/xls_to_csv.py)",
+      "Bash(npm run build)",
+      "Bash(npm run lint)",
+      "Bash(vercel ls)",
+      "Bash(vercel whoami)",
+      "Bash(vercel project *)",
+      "Bash(vercel inspect *)",
+      "Bash(vercel env ls)",
+      "Bash(vercel domains ls)",
+      "mcp__claude_ai_Microsoft_365__outlook_email_search",
+      "mcp__claude_ai_Microsoft_365__chat_message_search",
+      "mcp__claude_ai_Microsoft_365__outlook_calendar_search",
+      "mcp__claude_ai_Microsoft_365__read_resource",
+      "mcp__claude_ai_Atlassian__searchJiraIssuesUsingJql",
+      "mcp__claude_ai_Atlassian__getJiraIssue",
+      "mcp__claude_ai_Atlassian__lookupJiraAccountId",
+      "mcp__claude_ai_Atlassian__getVisibleJiraProjects"
     ]
   }
 }

@@ -1,52 +1,39 @@
 import { CheckCircle2, Circle, Clock, ChevronRight, X, CalendarDays } from 'lucide-react'
 import { Fragment, useState } from 'react'
-import { sprints } from '@/data/milestones'
+import { getSprintGroups, getUnscheduled } from '@/data/milestones'
 import { PillarBadge, PILLAR_CONFIG } from '@/components/PillarBadge'
 import { cn } from '@/lib/utils'
-import type { Pillar, SprintRow as SprintRowType, Milestone } from '@/types'
-
-function formatMonth(iso: string) {
-  return new Date(iso).toLocaleDateString('en-GB', { month: 'short' })
-}
-
-function isTodayBetween(prevDate: string, currDate: string) {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const prev = prevDate ? new Date(prevDate) : null
-  const curr = new Date(currDate)
-  if (!prev) return today <= curr
-  return today > prev && today <= curr
-}
+import type { Pillar, Milestone } from '@/types'
+import { milestones } from '@/data/milestones'
 
 function getProgress() {
   const today = new Date()
   const start = new Date('2026-05-26')
   const end = new Date('2026-12-15')
   const pct = Math.min(100, Math.max(0, ((today.getTime() - start.getTime()) / (end.getTime() - start.getTime())) * 100))
-  const done = sprints.flatMap(s => s.milestones).filter(m => m.status === 'done').length
-  const total = sprints.flatMap(s => s.milestones).filter(m => m.title).length
+  const done = milestones.filter(m => m.status === 'done').length
+  const total = milestones.length
   return { pct: Math.round(pct), done, total }
 }
 
-// Date column width — must match the spine position
-const DATE_COL = 'w-32'       // 128px
-const SPINE_POS = 'left-32'   // same 128px
+const DATE_COL = 'w-32'
+const SPINE_POS = 'left-32'
 
 export function Timeline() {
   const { pct, done, total } = getProgress()
-  let todayInserted = false
+  const sprintGroups = getSprintGroups()
+  const unscheduled = getUnscheduled()
 
   return (
     <section id="timeline" className="pt-16 min-h-screen gradient-page">
       <div className="max-w-4xl mx-auto px-8 py-16">
 
-        {/* Header */}
         <div className="mb-14">
           <h2 className="text-5xl font-extrabold mb-3">
             <span className="text-gradient-primary">Timeline</span>
           </h2>
           <p className="text-muted-foreground text-lg mb-8">
-            Sprint roadmap · May – December 2026
+            Sprint roadmap · 2026–2027
           </p>
           <div className="flex items-center gap-6 max-w-md">
             <div className="flex-1">
@@ -75,107 +62,84 @@ export function Timeline() {
           ))}
         </div>
 
-        {/* Timeline */}
-        <div className="relative">
-          {/* Vertical spine — aligned with date column right edge */}
-          <div className={`absolute ${SPINE_POS} top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-200 via-border to-border`} />
-
-          <div className="space-y-1">
-            {sprints.map((sprint, i) => {
-              const prevDate = i > 0 ? sprints[i - 1].endDate : ''
-              const showToday = !todayInserted && isTodayBetween(prevDate, sprint.endDate)
-              if (showToday) todayInserted = true
-
-              return (
-                <div key={`${sprint.sprint}-${sprint.endDate}`}>
-                  {showToday && <TodayIndicator dateColClass={DATE_COL} />}
-                  <SprintRow sprint={sprint} />
-                </div>
-              )
-            })}
+        {/* Scheduled sprints */}
+        {sprintGroups.length > 0 && (
+          <div className="mb-12">
+            <div className="relative">
+              <div className={`absolute ${SPINE_POS} top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-200 via-border to-border`} />
+              <div className="space-y-1">
+                {sprintGroups.map(group => (
+                  <SprintBlock key={group.sprint.id} sprint={group.sprint} milestones={group.milestones} />
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* Unscheduled milestones */}
+        {unscheduled.length > 0 && (
+          <div>
+            <div className="flex items-center gap-3 mb-6">
+              <div className="h-px flex-1 bg-border/60" />
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest px-3">
+                Not yet scheduled
+              </span>
+              <div className="h-px flex-1 bg-border/60" />
+            </div>
+            <div className="flex flex-row flex-wrap gap-2">
+              {unscheduled.map((m, i) => (
+                <div key={i} className="w-[calc(33.333%-6px)] min-w-[160px]">
+                  <MilestoneChip milestone={m} />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </section>
   )
 }
 
-function TodayIndicator({ dateColClass }: { dateColClass: string }) {
-  return (
-    <div className="relative flex items-center my-3 h-8">
-      {/* Empty date column space */}
-      <div className={`${dateColClass} flex-shrink-0`} />
-      {/* Line + badge starting from spine */}
-      <div className="flex-1 relative flex items-center">
-        <div
-          className="absolute left-0 right-0 h-px"
-          style={{ background: 'linear-gradient(90deg, #f97316 0%, transparent 80%)' }}
-        />
-        <span className="relative z-10 -ml-px gradient-primary text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-white/80 animate-pulse" />
-          TODAY
-        </span>
-      </div>
-    </div>
-  )
-}
-
-function SprintRow({ sprint }: { sprint: SprintRowType }) {
-  const allDone = sprint.milestones.length > 0 && sprint.milestones.every(m => m.status === 'done')
+function SprintBlock({ sprint, milestones }: { sprint: { label: string; startDate: string; endDate: string }; milestones: Milestone[] }) {
+  const allDone = milestones.length > 0 && milestones.every(m => m.status === 'done')
 
   const dotClass = cn(
     'rounded-full z-10 flex-shrink-0 shadow-sm transition-all -translate-x-1/2',
-    sprint.ipWeek
-      ? 'w-3 h-3 border border-dashed border-muted-foreground bg-background'
-      : allDone
-        ? 'w-4 h-4 bg-emerald-500 border-2 border-emerald-500 shadow-emerald-200'
-        : 'w-4 h-4 bg-white border-2 border-blue-300'
+    allDone
+      ? 'w-4 h-4 bg-emerald-500 border-2 border-emerald-500 shadow-emerald-200'
+      : 'w-4 h-4 bg-white border-2 border-blue-300'
   )
 
   return (
     <div className="relative flex items-start py-3">
-      {/* Date column — right-aligned text, clear background */}
       <div className={`${DATE_COL} flex-shrink-0 pr-5 text-right`}>
         <div className="flex flex-col items-end leading-none gap-0.5">
           <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-            {formatMonth(sprint.endDate)}
+            {new Date(sprint.endDate).toLocaleDateString('en-GB', { month: 'short' })}
           </span>
           <span className="text-2xl font-black text-foreground leading-none">
             {new Date(sprint.endDate).getDate()}
           </span>
-          <span className={cn(
-            'text-[10px]',
-            sprint.ipWeek ? 'text-blue-400 font-semibold italic' : 'text-muted-foreground'
-          )}>
-            {sprint.ipWeek ? `IP Week ${new Date(sprint.endDate).getFullYear()}` : sprint.sprint}
-          </span>
+          <span className="text-[10px] text-muted-foreground">{sprint.label}</span>
         </div>
       </div>
 
-      {/* Dot — centered on the spine */}
       <div className={dotClass} style={{ marginTop: '6px' }} />
 
-      {/* Cards */}
       <div className="flex-1 pl-6 flex flex-row flex-wrap gap-2 content-start">
-        {sprint.milestones.length > 0 ? (
-          sprint.milestones.map((m, idx) => {
-            const isNewProject = idx > 0 && m.project !== sprint.milestones[idx - 1].project
-            return (
-              <Fragment key={idx}>
-                {isNewProject && (
-                  <div className="w-full h-px my-1 bg-border" aria-hidden="true" />
-                )}
-                <div className="w-[calc(33.333%-6px)] min-w-[160px]">
-                  <MilestoneChip milestone={m} />
-                </div>
-              </Fragment>
-            )
-          })
-        ) : (
-          <div className="flex items-center h-9 px-4 rounded-xl border border-dashed border-border">
-            <span className="text-xs text-muted-foreground/50 italic">No milestones</span>
-          </div>
-        )}
+        {milestones.map((m, idx) => {
+          const isNewProject = idx > 0 && m.project !== milestones[idx - 1].project
+          return (
+            <Fragment key={idx}>
+              {isNewProject && (
+                <div className="w-full h-px my-1 bg-border" aria-hidden="true" />
+              )}
+              <div className="w-[calc(33.333%-6px)] min-w-[160px]">
+                <MilestoneChip milestone={m} />
+              </div>
+            </Fragment>
+          )
+        })}
       </div>
     </div>
   )
@@ -203,13 +167,8 @@ function MilestoneChip({ milestone }: { milestone: Milestone }) {
   )
 }
 
-function persons(m: Milestone): string {
-  return [m.person1, m.person2].filter(Boolean).join(' & ')
-}
-
 function DoneChip({ milestone, onClick }: { milestone: Milestone; onClick: () => void }) {
   const ds = DONE_STYLES[milestone.pillar]
-  const who = persons(milestone)
   return (
     <button
       onClick={onClick}
@@ -227,7 +186,7 @@ function DoneChip({ milestone, onClick }: { milestone: Milestone; onClick: () =>
           <span className="w-1.5 h-1.5 rounded-full bg-white/80 flex-shrink-0" />
           {milestone.pillar}
         </div>
-        {who && <div className={cn('text-[10px] mt-1', ds.subtext)}>{who}</div>}
+        {milestone.person && <div className={cn('text-[10px] mt-1', ds.subtext)}>{milestone.person}</div>}
       </div>
       <ChevronRight className="w-4 h-4 text-white/50 flex-shrink-0 mt-0.5 group-hover:text-white/90 transition-colors" />
     </button>
@@ -236,7 +195,6 @@ function DoneChip({ milestone, onClick }: { milestone: Milestone; onClick: () =>
 
 function PendingChip({ milestone, onClick }: { milestone: Milestone; onClick: () => void }) {
   const c = PILLAR_CONFIG[milestone.pillar]
-  const who = persons(milestone)
   return (
     <button
       onClick={onClick}
@@ -249,7 +207,7 @@ function PendingChip({ milestone, onClick }: { milestone: Milestone; onClick: ()
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold leading-snug text-foreground">{milestone.title}</p>
         <PillarBadge pillar={milestone.pillar} className="mt-1.5" />
-        {who && <div className="text-[10px] text-muted-foreground mt-1">{who}</div>}
+        {milestone.person && <div className="text-[10px] text-muted-foreground mt-1">{milestone.person}</div>}
       </div>
       <ChevronRight className="w-4 h-4 text-muted-foreground/40 flex-shrink-0 mt-0.5 group-hover:text-muted-foreground transition-colors" />
     </button>
@@ -258,7 +216,6 @@ function PendingChip({ milestone, onClick }: { milestone: Milestone; onClick: ()
 
 function InProgressChip({ milestone, onClick }: { milestone: Milestone; onClick: () => void }) {
   const c = PILLAR_CONFIG[milestone.pillar]
-  const who = persons(milestone)
   return (
     <button
       onClick={onClick}
@@ -275,24 +232,18 @@ function InProgressChip({ milestone, onClick }: { milestone: Milestone; onClick:
           <span className={cn('w-1.5 h-1.5 rounded-full flex-shrink-0', c.dot)} />
           {milestone.pillar}
         </div>
-        {who && <div className="text-[10px] text-muted-foreground mt-1">{who}</div>}
+        {milestone.person && <div className="text-[10px] text-muted-foreground mt-1">{milestone.person}</div>}
       </div>
       <ChevronRight className="w-4 h-4 text-muted-foreground/40 flex-shrink-0 mt-0.5 group-hover:text-muted-foreground transition-colors" />
     </button>
   )
 }
 
-function formatSprintDate(iso: string) {
-  return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
-}
-
 function MilestoneModal({ milestone, onClose }: { milestone: Milestone; onClose: () => void }) {
   const c = PILLAR_CONFIG[milestone.pillar]
   const ds = DONE_STYLES[milestone.pillar]
-  const who = persons(milestone)
   const isDone = milestone.status === 'done'
   const isInProgress = milestone.status === 'in_progress'
-  const sprintTag = milestone.sprintLabel.startsWith('IP') ? 'IP Week' : `S${milestone.sprintLabel}`
 
   return (
     <div
@@ -303,7 +254,6 @@ function MilestoneModal({ milestone, onClose }: { milestone: Milestone; onClose:
         className="relative bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden"
         onClick={e => e.stopPropagation()}
       >
-        {/* Header strip */}
         <div className={cn(
           'px-6 py-5',
           isDone
@@ -341,22 +291,34 @@ function MilestoneModal({ milestone, onClose }: { milestone: Milestone; onClose:
           </div>
         </div>
 
-        {/* Meta strip */}
         <div className="px-6 pt-4 pb-2 flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-muted-foreground border-b border-border/60">
-          <span className="flex items-center gap-1.5 font-semibold text-foreground">
-            <CalendarDays className="w-3.5 h-3.5" />
-            {sprintTag}
-          </span>
-          <span>{formatSprintDate(milestone.sprintStartDate)} – {formatSprintDate(milestone.sprintEndDate)}</span>
-          {who && <span>👤 {who}</span>}
+          {milestone.sprint && (
+            <>
+              <span className="flex items-center gap-1.5 font-semibold text-foreground">
+                <CalendarDays className="w-3.5 h-3.5" />
+                {milestone.sprint.label}
+              </span>
+              <span>
+                {new Date(milestone.sprint.startDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                {' – '}
+                {new Date(milestone.sprint.endDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+              </span>
+            </>
+          )}
+          {milestone.person && <span>👤 {milestone.person}</span>}
+          <a
+            href={`https://nice-ce-cxone-prod.atlassian.net/browse/${milestone.jiraKey}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 text-blue-500 hover:underline"
+          >
+            {milestone.jiraKey} ↗
+          </a>
         </div>
 
-        {/* Body */}
         <div className="px-6 py-5">
           {milestone.details ? (
-            <p className="text-sm text-foreground/80 leading-relaxed">
-              {milestone.details.replace(/;/g, ',')}
-            </p>
+            <p className="text-sm text-foreground/80 leading-relaxed">{milestone.details}</p>
           ) : (
             <div className="text-sm text-muted-foreground italic text-center py-8 border border-dashed border-border rounded-xl bg-muted/30">
               Details coming soon — TBD

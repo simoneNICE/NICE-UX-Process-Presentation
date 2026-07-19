@@ -1,6 +1,6 @@
 import { CheckCircle2, Circle, Clock, ChevronRight, X, CalendarDays } from 'lucide-react'
 import { useState, useMemo } from 'react'
-import { sprints } from '@/data/milestones'
+import { milestones } from '@/data/milestones'
 import { PILLAR_CONFIG } from '@/components/PillarBadge'
 import { cn } from '@/lib/utils'
 import type { Pillar, Milestone } from '@/types'
@@ -25,24 +25,19 @@ const PILLAR_META: Record<Pillar, { icon: string; description: string; gradient:
 
 const PILLARS: Pillar[] = ['Knowledge', 'Efficiency', 'Governance']
 
-function getAllMilestones(): Milestone[] {
-  return sprints.flatMap(s => s.milestones)
-}
-
 function getProgress() {
   const today = new Date()
   const start = new Date('2026-05-26')
   const end = new Date('2026-12-15')
   const pct = Math.min(100, Math.max(0, ((today.getTime() - start.getTime()) / (end.getTime() - start.getTime())) * 100))
-  const all = getAllMilestones()
-  const done = all.filter(m => m.status === 'done').length
-  const total = all.length
+  const done = milestones.filter(m => m.status === 'done').length
+  const total = milestones.length
   return { pct: Math.round(pct), done, total }
 }
 
-function groupByProject(milestones: Milestone[]): Map<string, Milestone[]> {
+function groupByProject(ms: Milestone[]): Map<string, Milestone[]> {
   const map = new Map<string, Milestone[]>()
-  for (const m of milestones) {
+  for (const m of ms) {
     if (!map.has(m.project)) map.set(m.project, [])
     map.get(m.project)!.push(m)
   }
@@ -50,23 +45,21 @@ function groupByProject(milestones: Milestone[]): Map<string, Milestone[]> {
 }
 
 function milestoneMatchesPerson(m: Milestone, selected: Set<string>): boolean {
-  return (!!m.person1 && selected.has(m.person1)) || (!!m.person2 && selected.has(m.person2))
+  return selected.has(m.person)
 }
 
 export function FocusAreas() {
   const { pct, done, total } = getProgress()
-  const allMilestones = getAllMilestones()
 
   const [selectedPersons, setSelectedPersons] = useState<Set<string>>(new Set())
 
   const personCounts = useMemo(() => {
     const map = new Map<string, number>()
-    allMilestones.forEach(m => {
-      if (m.person1) map.set(m.person1, (map.get(m.person1) ?? 0) + 1)
-      if (m.person2) map.set(m.person2, (map.get(m.person2) ?? 0) + 1)
+    milestones.forEach(m => {
+      if (m.person) map.set(m.person, (map.get(m.person) ?? 0) + 1)
     })
     return [...map.entries()].sort((a, b) => b[1] - a[1])
-  }, [allMilestones])
+  }, [])
 
   const togglePerson = (person: string) => {
     setSelectedPersons(prev => {
@@ -81,7 +74,6 @@ export function FocusAreas() {
 
   return (
     <section id="vision" className="py-24 bg-white relative overflow-hidden">
-      {/* Background glow */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[300px] bg-blue-50 rounded-full blur-3xl opacity-50" />
       </div>
@@ -99,12 +91,10 @@ export function FocusAreas() {
             all accelerated by AI.
           </p>
 
-          {/* Roadmap heading */}
           <h3 className="text-3xl font-extrabold mb-4">
             <span className="text-gradient-primary">Roadmap</span>
           </h3>
 
-          {/* Overall progress */}
           <div className="flex items-center gap-6 max-w-md">
             <div className="flex-1">
               <div className="flex justify-between text-xs text-muted-foreground mb-1.5">
@@ -169,42 +159,37 @@ export function FocusAreas() {
           {PILLARS.map(pillar => {
             const c = PILLAR_CONFIG[pillar]
             const meta = PILLAR_META[pillar]
-            const milestones = allMilestones.filter(m => m.pillar === pillar)
-            const byProject = groupByProject(milestones)
-            const doneCount = milestones.filter(m => m.status === 'done').length
+            const pillarMilestones = milestones.filter(m => m.pillar === pillar)
+            const byProject = groupByProject(pillarMilestones)
+            const doneCount = pillarMilestones.filter(m => m.status === 'done').length
 
             return (
               <div
                 key={pillar}
                 className="flex flex-col rounded-2xl border border-border bg-white shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300"
               >
-                {/* Top gradient accent */}
                 <div className={`h-1 bg-gradient-to-r ${meta.gradient}`} />
 
-                {/* Pillar header */}
                 <div className="px-6 pt-6 pb-5">
                   <div className="text-3xl mb-3">{meta.icon}</div>
                   <h3 className="text-2xl font-black text-foreground mb-1 tracking-tight">{pillar}</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed mb-4">{meta.description}</p>
 
-                  {/* Per-pillar progress */}
                   <div className="flex items-center gap-3">
                     <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
                       <div
                         className={`h-full bg-gradient-to-r ${meta.gradient} rounded-full transition-all duration-700`}
-                        style={{ width: `${(doneCount / Math.max(milestones.length, 1)) * 100}%` }}
+                        style={{ width: `${(doneCount / Math.max(pillarMilestones.length, 1)) * 100}%` }}
                       />
                     </div>
                     <span className={cn('text-xs font-semibold', c.text)}>
-                      {doneCount}/{milestones.length}
+                      {doneCount}/{pillarMilestones.length}
                     </span>
                   </div>
                 </div>
 
-                {/* Divider */}
                 <div className={cn('mx-6 border-t', c.border)} />
 
-                {/* Projects */}
                 <div className="flex-1 p-5 space-y-5">
                   {byProject.size === 0 && (
                     <p className="text-xs text-muted-foreground/50 italic text-center py-6">
@@ -225,116 +210,8 @@ export function FocusAreas() {
             )
           })}
         </div>
-
-        {/* Timeline ruler */}
-        <SprintRuler />
-
       </div>
     </section>
-  )
-}
-
-const RULER_START = '2026-05-26'
-const RULER_END = '2027-10-05'
-
-function SprintRuler() {
-  const start = new Date(RULER_START).getTime()
-  const end   = new Date(RULER_END).getTime()
-  const total = end - start
-  const today = new Date()
-
-  const toPct = (dateStr: string) =>
-    Math.min(100, Math.max(0, (new Date(dateStr).getTime() - start) / total * 100))
-
-  const todayPct   = toPct(today.toISOString().split('T')[0])
-  const todayInRange = today.getTime() >= start && today.getTime() <= end
-
-  const months: { label: string; pct: number }[] = []
-  const cursor = new Date(RULER_START)
-  cursor.setDate(1)
-  cursor.setMonth(cursor.getMonth() + 1)
-  while (cursor.getTime() < end) {
-    months.push({
-      label: cursor.toLocaleDateString('en-GB', { month: 'short', year: '2-digit' }),
-      pct: toPct(cursor.toISOString().split('T')[0]),
-    })
-    cursor.setMonth(cursor.getMonth() + 2)
-  }
-
-  return (
-    <div className="pt-6 border-t border-border/60">
-      {/* Ruler area */}
-      <div className="relative h-16">
-        {/* Base line */}
-        <div className="absolute left-0 right-0 bg-border" style={{ top: '32px', height: '1px' }} />
-
-        {/* Sprints */}
-        {sprints.map((s, i) => {
-          const pct = toPct(s.endDate)
-          return (
-            <div key={i} className="absolute" style={{ left: `${pct}%` }}>
-              {/* Tick */}
-              <div
-                className={cn('absolute -translate-x-px', s.ipWeek ? 'bg-blue-200' : 'bg-border/80')}
-                style={{ top: '28px', width: '1px', height: s.ipWeek ? '10px' : '6px' }}
-              />
-              {/* Milestone dots */}
-              {s.milestones.length > 0 && (
-                <div className="absolute flex gap-px" style={{ top: '14px', transform: 'translateX(-50%)' }}>
-                  {s.milestones.map((m, j) => (
-                    <div
-                      key={j}
-                      title={`${m.title} (${[m.person1, m.person2].filter(Boolean).join(' & ')})`}
-                      className={cn(
-                        'rounded-full cursor-help transition-transform hover:scale-150',
-                        PILLAR_CONFIG[m.pillar].dot,
-                        m.status === 'done' ? 'opacity-100' : m.status === 'in_progress' ? 'opacity-70' : 'opacity-40'
-                      )}
-                      style={{ width: '7px', height: '7px' }}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          )
-        })}
-
-        {/* TODAY marker */}
-        {todayInRange && (
-          <div className="absolute" style={{ left: `${todayPct}%`, top: '22px', transform: 'translateX(-50%)' }}>
-            <div className="w-0.5 h-6 bg-orange-500 rounded-full mx-auto" />
-            <span className="block text-center text-[8px] font-bold text-orange-500 whitespace-nowrap mt-0.5">
-              TODAY
-            </span>
-          </div>
-        )}
-
-        {/* Month labels */}
-        {months.map((m, i) => (
-          <div key={i} className="absolute" style={{ left: `${m.pct}%`, top: '42px', transform: 'translateX(-50%)' }}>
-            <span className="text-[9px] text-muted-foreground/50 whitespace-nowrap">{m.label}</span>
-          </div>
-        ))}
-      </div>
-
-      {/* Legend */}
-      <div className="flex items-center gap-5 mt-1 justify-end">
-        {PILLARS.map(p => (
-          <span key={p} className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-            <span className={cn('rounded-full', PILLAR_CONFIG[p].dot)} style={{ width: '7px', height: '7px' }} />
-            {p}
-          </span>
-        ))}
-        <span className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-          <span className="rounded-full bg-orange-500" style={{ width: '7px', height: '7px' }} />
-          Today
-        </span>
-        <span className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-          <span className="rounded-full bg-gray-400 opacity-40" style={{ width: '7px', height: '7px' }} />
-          Pending
-        </span>
-      </div>
-    </div>
   )
 }
 
@@ -355,19 +232,8 @@ function ProjectGroup({ project, milestones, pillar, selectedPersons }: {
 
   const first = milestones[0]
   const description = first?.projectDescription
-  const goal        = first?.goal
-  const kpi         = first?.kpi
-
-  // Timing — calculated from milestone sprint dates
-  const allDates = milestones.flatMap(m => [m.sprintStartDate, m.sprintEndDate]).filter(Boolean)
-  const startDate = allDates.length ? allDates.reduce((a, b) => a < b ? a : b) : ''
-  const endDate   = allDates.length ? allDates.reduce((a, b) => a > b ? a : b) : ''
-  const durationWeeks = startDate && endDate
-    ? Math.round((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24 * 7))
-    : 0
-  const durationLabel = durationWeeks >= 8
-    ? `${Math.round(durationWeeks / 4.3)} months`
-    : `${durationWeeks} weeks`
+  const goal = first?.goal
+  const kpi = first?.kpi
 
   return (
     <div>
@@ -381,38 +247,24 @@ function ProjectGroup({ project, milestones, pillar, selectedPersons }: {
       {(description || goal || kpi) && (
         <div className="mb-5 space-y-4">
           {description && (
-            <p className="text-sm text-foreground/70 leading-relaxed">{description.replace(/;/g, ',')}</p>
+            <p className="text-sm text-foreground/70 leading-relaxed">{description}</p>
           )}
           {(goal || kpi) && (
             <div className="space-y-3">
               {goal && (
                 <div className="space-y-1">
                   <span className={cn('text-[10px] font-bold uppercase tracking-widest block', c.text)}>Goal</span>
-                  <p className="text-sm text-foreground/80 leading-relaxed">{goal.replace(/;/g, ',')}</p>
+                  <p className="text-sm text-foreground/80 leading-relaxed">{goal}</p>
                 </div>
               )}
               {kpi && (
                 <div className="space-y-1">
                   <span className={cn('text-[10px] font-bold uppercase tracking-widest block', c.text)}>KPI</span>
-                  <p className="text-sm text-foreground/80 leading-relaxed">{kpi.replace(/;/g, ',')}</p>
+                  <p className="text-sm text-foreground/80 leading-relaxed">{kpi}</p>
                 </div>
               )}
             </div>
           )}
-        </div>
-      )}
-
-      {startDate && endDate && (
-        <div className="mb-5 space-y-1">
-          <span className={cn('text-[10px] font-bold uppercase tracking-widest block', c.text)}>Timeline</span>
-          <div className="flex items-center gap-2 text-sm text-foreground/80">
-            <span className="font-medium">{formatSprintDate(startDate)}</span>
-            <span className="text-muted-foreground">→</span>
-            <span className="font-medium">{formatSprintDate(endDate)}</span>
-            <span className={cn('text-[10px] font-semibold px-2 py-0.5 rounded-full border ml-1', c.bg, c.text, c.border)}>
-              {durationLabel}
-            </span>
-          </div>
         </div>
       )}
 
@@ -432,17 +284,10 @@ function ProjectGroup({ project, milestones, pillar, selectedPersons }: {
   )
 }
 
-function formatSprintDate(iso: string) {
-  return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
-}
-
 function MilestoneItem({ milestone, visible = true }: { milestone: Milestone; visible?: boolean }) {
   const [open, setOpen] = useState(false)
   const c = PILLAR_CONFIG[milestone.pillar]
   const meta = PILLAR_META[milestone.pillar]
-  const sprintTag = milestone.sprintLabel.startsWith('IP')
-    ? 'IP Week'
-    : `S${milestone.sprintLabel}`
 
   return (
     <>
@@ -484,35 +329,27 @@ function MilestoneItem({ milestone, visible = true }: { milestone: Milestone; vi
             )}>
               {milestone.title}
             </span>
-            <div className={cn(
-              'flex items-center gap-2 mt-1.5',
-              milestone.status === 'done' ? 'text-white/70' : 'text-muted-foreground/70'
-            )}>
-              <span className={cn(
-                'text-[13px] font-black tracking-tight',
-                milestone.status === 'done' ? 'text-white' : 'text-foreground/80'
+            {milestone.sprint && (
+              <div className={cn(
+                'flex items-center gap-2 mt-1.5',
+                milestone.status === 'done' ? 'text-white/70' : 'text-muted-foreground/70'
               )}>
-                {sprintTag}
-              </span>
-              <span className="text-[10px] font-medium">
-                {formatSprintDate(milestone.sprintStartDate)} – {formatSprintDate(milestone.sprintEndDate)}
-              </span>
-            </div>
-            {(milestone.person1 || milestone.person2) && (
-              <div className="flex flex-col gap-0.5 mt-1.5">
-                {milestone.person1 && (
-                  <span className={cn('text-xs font-bold', milestone.status === 'done' ? 'text-white/90' : 'text-foreground')}>
-                    {milestone.person1}
-                    <span className={cn('text-[9px] font-semibold ml-1', milestone.status === 'done' ? 'text-white/50' : 'text-muted-foreground')}>Owner</span>
-                  </span>
-                )}
-                {milestone.person2 && (
-                  <span className={cn('text-xs font-bold', milestone.status === 'done' ? 'text-white/90' : 'text-foreground')}>
-                    {milestone.person2}
-                    <span className={cn('text-[9px] font-semibold ml-1', milestone.status === 'done' ? 'text-white/50' : 'text-muted-foreground')}>Assistant</span>
-                  </span>
-                )}
+                <span className={cn(
+                  'text-[13px] font-black tracking-tight',
+                  milestone.status === 'done' ? 'text-white' : 'text-foreground/80'
+                )}>
+                  {milestone.sprint.label}
+                </span>
+                <span className="text-[10px] font-medium">
+                  {formatDate(milestone.sprint.startDate)} – {formatDate(milestone.sprint.endDate)}
+                </span>
               </div>
+            )}
+            {milestone.person && (
+              <span className={cn('text-xs font-bold block mt-1', milestone.status === 'done' ? 'text-white/90' : 'text-foreground')}>
+                {milestone.person}
+                <span className={cn('text-[9px] font-semibold ml-1', milestone.status === 'done' ? 'text-white/50' : 'text-muted-foreground')}>Owner</span>
+              </span>
             )}
           </div>
           <ChevronRight className={cn(
@@ -528,11 +365,13 @@ function MilestoneItem({ milestone, visible = true }: { milestone: Milestone; vi
   )
 }
 
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+}
+
 function MilestoneModal({ milestone, onClose }: { milestone: Milestone; onClose: () => void }) {
   const c = PILLAR_CONFIG[milestone.pillar]
   const meta = PILLAR_META[milestone.pillar]
-  const who = [milestone.person1, milestone.person2].filter(Boolean).join(' & ')
-  const sprintTag = milestone.sprintLabel.startsWith('IP') ? 'IP Week' : `S${milestone.sprintLabel}`
   const isDone = milestone.status === 'done'
   const isInProgress = milestone.status === 'in_progress'
 
@@ -545,7 +384,6 @@ function MilestoneModal({ milestone, onClose }: { milestone: Milestone; onClose:
         className="relative bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden"
         onClick={e => e.stopPropagation()}
       >
-        {/* Header */}
         <div className={cn(
           'px-6 py-5 border-b',
           isDone
@@ -581,28 +419,34 @@ function MilestoneModal({ milestone, onClose }: { milestone: Milestone; onClose:
           </div>
         </div>
 
-        {/* Meta strip */}
         <div className="px-6 pt-4 pb-2 flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-muted-foreground border-b border-border/60">
-          <span className="flex items-center gap-1.5 font-semibold text-foreground">
-            <CalendarDays className="w-3.5 h-3.5" />
-            {sprintTag}
-          </span>
-          <span className="flex items-center gap-1">
-            {formatSprintDate(milestone.sprintStartDate)} – {formatSprintDate(milestone.sprintEndDate)}
-          </span>
-          {who && (
-            <span className="flex items-center gap-1">
-              👤 {who}
-            </span>
+          {milestone.sprint && (
+            <>
+              <span className="flex items-center gap-1.5 font-semibold text-foreground">
+                <CalendarDays className="w-3.5 h-3.5" />
+                {milestone.sprint.label}
+              </span>
+              <span className="flex items-center gap-1">
+                {formatDate(milestone.sprint.startDate)} – {formatDate(milestone.sprint.endDate)}
+              </span>
+            </>
           )}
+          {milestone.person && (
+            <span className="flex items-center gap-1">👤 {milestone.person}</span>
+          )}
+          <a
+            href={`https://nice-ce-cxone-prod.atlassian.net/browse/${milestone.jiraKey}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 text-blue-500 hover:underline"
+          >
+            {milestone.jiraKey} ↗
+          </a>
         </div>
 
-        {/* Body */}
         <div className="px-6 py-5">
           {milestone.details ? (
-            <p className="text-sm text-foreground/80 leading-relaxed">
-              {milestone.details.replace(/;/g, ',')}
-            </p>
+            <p className="text-sm text-foreground/80 leading-relaxed">{milestone.details}</p>
           ) : (
             <div className="text-sm text-muted-foreground italic text-center py-8 border border-dashed border-border rounded-xl bg-muted/30">
               Details coming soon — TBD
