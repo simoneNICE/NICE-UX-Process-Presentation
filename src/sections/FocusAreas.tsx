@@ -6,7 +6,7 @@ import { PILLAR_CONFIG } from '@/components/PillarBadge'
 import { cn } from '@/lib/utils'
 import type { Pillar, Milestone } from '@/types'
 
-const PILLAR_META: Record<Pillar, { icon: string; description: string; gradient: string }> = {
+const PILLAR_META: Record<Pillar, { icon: string; description: string; gradient: string; kpis?: { label: string; target: string }[] }> = {
   Knowledge: {
     icon: '📚',
     description: 'Build a shared foundation of methods, guides, and best practices.',
@@ -16,6 +16,13 @@ const PILLAR_META: Record<Pillar, { icon: string; description: string; gradient:
     icon: '⚡',
     description: 'Streamline processes and reduce friction across design workflows.',
     gradient: 'from-emerald-500 to-teal-400',
+    kpis: [
+      { label: 'AI adoption among designers',      target: '90%'    },
+      { label: 'Average design cycle reduction',   target: '25%'    },
+      { label: 'Time saved per designer/month',    target: '20 hrs' },
+      { label: 'AI-generated assets reused',       target: '60%'    },
+      { label: 'Manual repetitive work eliminated', target: '30%'  },
+    ],
   },
   Governance: {
     icon: '🏛️',
@@ -187,6 +194,27 @@ export function FocusAreas() {
                       {doneCount}/{pillarMilestones.length}
                     </span>
                   </div>
+
+                  {meta.kpis && (
+                    <div className="mt-4 overflow-hidden rounded-lg border border-border">
+                      <table className="w-full text-xs">
+                        <thead>
+                          <tr className={cn('border-b border-border', c.bg)}>
+                            <th className={cn('px-3 py-2 text-left font-bold uppercase tracking-wider', c.text)}>KPI</th>
+                            <th className={cn('px-3 py-2 text-right font-bold uppercase tracking-wider', c.text)}>Target</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {meta.kpis.map((kpi, i) => (
+                            <tr key={i} className={cn('border-b border-border/50 last:border-0', i % 2 === 0 ? 'bg-white' : c.bg)}>
+                              <td className="px-3 py-2 text-foreground/80">{kpi.label}</td>
+                              <td className={cn('px-3 py-2 text-right font-bold tabular-nums', c.text)}>{kpi.target}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
                 </div>
 
                 <div className={cn('mx-6 border-t', c.border)} />
