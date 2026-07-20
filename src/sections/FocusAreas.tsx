@@ -219,7 +219,7 @@ export function FocusAreas() {
 
                 <div className={cn('mx-6 border-t', c.border)} />
 
-                <div className="flex-1 p-5 space-y-5">
+                <div className="flex-1 p-5 space-y-6">
                   {byProject.size === 0 && (
                     <p className="text-xs text-muted-foreground/50 italic text-center py-6">
                       No milestones yet
@@ -266,7 +266,7 @@ function ProjectGroup({ project, milestones, pillar, selectedPersons }: {
   const epicKey = getProjectMeta(pillar, project)?.epicKey
 
   return (
-    <div>
+    <div className="rounded-xl border border-border bg-muted/20 p-4 shadow-sm">
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-2 min-w-0">
           <h4 className="text-lg font-extrabold text-foreground truncate">{project}</h4>
@@ -355,22 +355,26 @@ function MilestoneItem({ milestone, visible = true }: { milestone: Milestone; vi
               : <Circle className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: c.iconColor }} />
           }
           <div className="flex-1 min-w-0">
+            {/* Status — chip distinto, staccato dal titolo */}
             {milestone.status === 'done' && (
-              <span className="text-[9px] font-bold uppercase tracking-widest block mb-0.5 text-white/80">
+              <span className="inline-flex items-center text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded-md mb-2 bg-white/20 text-white">
                 ✓ Done
               </span>
             )}
             {milestone.status === 'in_progress' && (
-              <span className={cn('text-[9px] font-bold uppercase tracking-widest block mb-0.5', c.text)}>
+              <span className={cn('inline-flex items-center text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded-md mb-2 bg-white/70 border', c.text, c.border)}>
                 ⟳ In Progress
               </span>
             )}
+
+            {/* Titolo */}
             <span className={cn(
               'text-sm leading-snug block',
               milestone.status === 'done' ? 'text-white font-semibold' : 'text-foreground font-medium'
             )}>
               {milestone.title}
             </span>
+
             {milestone.sprint && (
               <div className={cn(
                 'flex items-center gap-2 mt-1.5',
@@ -387,11 +391,18 @@ function MilestoneItem({ milestone, visible = true }: { milestone: Milestone; vi
                 </span>
               </div>
             )}
+
+            {/* Owner — separato con divider */}
             {milestone.person && (
-              <span className={cn('text-xs font-bold block mt-1', milestone.status === 'done' ? 'text-white/90' : 'text-foreground')}>
-                {milestone.person}
-                <span className={cn('text-[9px] font-semibold ml-1', milestone.status === 'done' ? 'text-white/50' : 'text-muted-foreground')}>Owner</span>
-              </span>
+              <div className={cn(
+                'flex items-center gap-1.5 mt-2 pt-2 border-t',
+                milestone.status === 'done' ? 'border-white/20' : 'border-border'
+              )}>
+                <span className={cn('text-[9px] font-semibold uppercase tracking-widest', milestone.status === 'done' ? 'text-white/50' : 'text-muted-foreground')}>Owner</span>
+                <span className={cn('text-xs font-bold', milestone.status === 'done' ? 'text-white/90' : 'text-foreground')}>
+                  {milestone.person}
+                </span>
+              </div>
             )}
           </div>
           <ChevronRight className={cn(

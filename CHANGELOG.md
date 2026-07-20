@@ -16,6 +16,8 @@
 - Ogni milestone mostra solo il proprio sprint, senza raggruppamenti artificiali
 - Corretti i nomi del team (Shikha Shukla, Erick Mathews, David Stoker, Advait Patil, Tali Silon-Shacham)
 - Rimosso il campo "person2" e il flag "ip_week" non più necessari
+- Nelle schede delle milestone lo stato, il titolo e l'owner sono ora separati più chiaramente
+- I progetti all'interno di ogni pilastro sono racchiusi in riquadri distinti, più facili da distinguere a colpo d'occhio
 
 ### Bug fix
 _Nessun bug fix ancora._
