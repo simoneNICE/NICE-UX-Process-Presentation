@@ -6,11 +6,11 @@ export interface TeamMember {
 }
 
 export const coreTeam: TeamMember[] = [
-  { name: 'Simone Mimun',   role: 'Pillar Owner',       description: 'Systems thinker, cross-team alignment', photo: '' },
-  { name: 'Yoav Chen',      role: 'Governance',          description: 'Quality standards, reviews',            photo: '' },
-  { name: 'Lihi Shrem',     role: 'Process Architect',   description: 'Workflow design, playbooks',            photo: '' },
-  { name: 'Sheetal Barge-Gole', role: 'Knowledge Manager',   description: 'Repository & documentation',            photo: '' },
-  { name: 'Erick Mathews',  role: 'Automation/AI Lead',  description: 'Tools, efficiency',                     photo: '' },
+  { name: 'Simone Mimun',   role: 'Pillar Owner',       description: 'Systems thinker, cross-team alignment', photo: '/team/simone.jpg' },
+  { name: 'Yoav Chen',      role: 'Governance',          description: 'Quality standards, reviews',            photo: '/team/yoav.jpg' },
+  { name: 'Lihi Shrem',     role: 'Process Architect',   description: 'Workflow design, playbooks',            photo: '/team/lihi.jpg' },
+  { name: 'Sheetal Barge-Gole', role: 'Knowledge Manager',   description: 'Repository & documentation',            photo: '/team/sheetal.jpg' },
+  { name: 'Erick Mathews',  role: 'Automation/AI Lead',  description: 'Tools, efficiency',                     photo: '/team/erick.jpg' },
 ]
 
 export const regionalReps: TeamMember[] = [
