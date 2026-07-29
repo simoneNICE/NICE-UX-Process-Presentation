@@ -55,6 +55,12 @@ const JIRA_PROJECTS: Record<string, JiraProjectMeta> = {
     goal: 'x2 Governance in NICE apps, using human support.',
     kpi: 'Design Patterns',
   },
+  'Governance/Lyra QA Validation': {
+    epicKey: 'CXUX-13738',
+    description: 'QA validation of Lyra design output against Design System standards.',
+    goal: 'TBD',
+    kpi: 'TBD',
+  },
   'Knowledge/AI Training': {
     epicKey: 'CXUX-13137',
     description: 'Practical and theoretical sessions on AI, hosted by Erick Mathews.',

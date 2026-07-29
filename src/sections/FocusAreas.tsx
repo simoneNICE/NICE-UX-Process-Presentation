@@ -174,7 +174,7 @@ export function FocusAreas() {
             return (
               <div
                 key={pillar}
-                className="flex flex-col rounded-2xl border border-border bg-white shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300"
+                className="flex flex-col rounded-2xl bg-white shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300"
               >
                 <div className={`h-1 bg-gradient-to-r ${meta.gradient}`} />
 
