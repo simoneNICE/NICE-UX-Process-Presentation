@@ -10,6 +10,13 @@ export interface JiraProjectMeta {
 // Source of truth: JIRA epics under initiative CXUX-13120
 // Key: `${pillar}/${project}` — must match values in milestones.csv
 const JIRA_PROJECTS: Record<string, JiraProjectMeta> = {
+  'Efficiency/JIRA Process for Design System': {
+    epicKey: 'CXUX-14034',
+    description:
+      'Governance model and JIRA operational process for managing the Design System, with shared ownership across UX, R&D, and PM through a Discovery Team. It covers Capability-based planning, the RFC process, prioritization criteria, design lead time, and communication responsibilities.',
+    goal: "To bring structure, transparency, and shared accountability to Design System planning and delivery — ensuring priorities reflect business needs, design and development stay in sync, and every stakeholder has clear visibility into what's being built, when, and why.",
+    kpi: '% of features delivered within the committed sprint/release (delivery predictability); % of features meeting the design lead-time window (2–6 sprints); Average RFC review turnaround time (creation to decision); % of RFCs approved on first pass vs. sent back for missing info; % of urgent/ad-hoc requests handled outside the 20% flexible quota; Design System component adoption rate (post-release usage); % of Capabilities closed with all sign-offs (Design, Eng, QA) completed',
+  },
   'Efficiency/AI Usage': {
     epicKey: 'CXUX-13122',
     description: 'A structured program to increase design quality and team efficiency through practical AI adoption.',

@@ -48,14 +48,19 @@ export const milestones: Milestone[] = [
   m("CXUX-13678", "Knowledge", "AI Training", "Building a storybook with Claude", "todo", "Erick Mathews", "Final training session of the year: using Claude to generate, maintain, and document Storybook components. Bridge the gap between design system governance and engineering handoff. Closes the training program, outputs feed directly into Governance pillar."),
   m("CXUX-13681", "Knowledge", "AI Training", "Claude in GitHub and development", "todo", "Erick Mathews", "Hands-on session on Claude Code integration via GitHub. Cover PR review automation, code generation for design tokens and specs, and how designers can contribute to codebases using Claude as co-pilot."),
 
+  // Efficiency / JIRA Process for Design System (CXUX-14034)
+  m("CXUX-14035", "Efficiency", "JIRA Process for Design System", "Ops Lead Playbook", "in_progress", "Simone Mimun", "<custom data-type=\"smartlink\" data-id=\"id-0\">https://nice-ce-cxone-prod.atlassian.net/wiki/x/54Gv8</custom> \n\n<custom data-type=\"smartlink\" data-id=\"id-1\">https://nice-ce-cxone-prod.atlassian.net/wiki/x/RQOq8</custom> "),
+  m("CXUX-14036", "Efficiency", "JIRA Process for Design System", "Training to DS team", "todo", "Simone Mimun", ""),
+  m("CXUX-14037", "Efficiency", "JIRA Process for Design System", "Build and own the ownership on the communication", "todo", "Simone Mimun", ""),
+
   // Efficiency / AI Usage (CXUX-13122)
   m("CXUX-13410", "Efficiency", "AI Usage", "Project Work Plan", "done", "Lihi Shrem", "", S193),
   m("CXUX-13745", "Efficiency", "AI Usage", "Creating Survey", "done", "Lihi Shrem", "", S193),
   m("CXUX-13797", "Efficiency", "AI Usage", "Survey Analysis", "in_progress", "Lihi Shrem", ""),
   m("CXUX-13525", "Efficiency", "AI Usage", "AI Usage Interviews - Pune + US location Designers - SBG", "todo", "Sheetal Barge-Gole", ""),
   m("CXUX-13407", "Efficiency", "AI Usage", "AI Usage Interviews - 4 Designers (1)", "todo", "Lihi Shrem", "", S193),
-  m("CXUX-13805", "Efficiency", "AI Usage", "Process for AI Usage (TBD)", "todo", "Simone Mimun", ""),
   m("CXUX-13471", "Efficiency", "AI Usage", "AI Usage Interviews - 4 Designers (2)", "todo", "Lihi Shrem", "", S195),
+  m("CXUX-13805", "Efficiency", "AI Usage", "Process for AI Usage", "todo", "Simone Mimun", ""),
 
   // Efficiency / JIRA Process (CXUX-13132)
   m("CXUX-13682", "Efficiency", "JIRA Process", "Introducing JIRA process for researchers", "done", "Simone Mimun", "Roll out the new JIRA workflow for UX researchers. Define ticket types, field requirements, and tagging conventions. Run a guided onboarding session and collect initial friction points. Baseline process before the field-reduction work."),
@@ -64,7 +69,7 @@ export const milestones: Milestone[] = [
   m("CXUX-13685", "Efficiency", "JIRA Process", "100% JIRA Engagement for Researchers", "todo", "John Tucker", ""),
   m("CXUX-13686", "Efficiency", "JIRA Process", "100% JIRA Engagement for Designers", "todo", "John Tucker", ""),
   m("CXUX-14032", "Efficiency", "JIRA Process", "Training for USA JIRA Champions", "in_progress", "Simone Mimun", ""),
-  m("CXUX-14033", "Efficiency", "JIRA Process", "Training for USA Designrs", "in_progress", "John Tucker", ""),
+  m("CXUX-14033", "Efficiency", "JIRA Process", "Training for USA Designrs", "todo", "John Tucker", ""),
 
   // Efficiency / JIRA AI Assistant (CXUX-13133)
   m("CXUX-13687", "Efficiency", "JIRA AI Assistant", "POC: JIRA AI Assistant for managers and employees", "done", "Simone Mimun", "Proof of concept for the AI Assistant integration in JIRA for managers and employees. Automate ticket summarisation, priority suggestions, and sprint planning inputs. First measurable step toward time reduction, targets 30% saving."),
@@ -75,14 +80,18 @@ export const milestones: Milestone[] = [
   m("CXUX-13693", "Governance", "Sharing", "Sprint DEMO: will include all sites once in release", "in_progress", "Shikha Shukla", "Expanding the Sprint DEMO to also include the USA site."),
   m("CXUX-13694", "Governance", "Sharing", "Improve Sprint DEMO (Templates)", "in_progress", "Shikha Shukla", "Create a standard template for Sprint DEMO presentation."),
   m("CXUX-13798", "Governance", "Sharing", "Launch the Design Critique Meeting", "done", "Simone Mimun", "Create a standard template for Sprint DEMO presentation."),
-  m("CXUX-13799", "Governance", "Sharing", "Improve the Design Critique Meeting", "in_progress", "Simone Mimun", "Create a standard template for Sprint DEMO presentation."),
+  m("CXUX-13799", "Governance", "Sharing", "Improve the Design Critique Meeting", "todo", "Simone Mimun", "Create a standard template for Sprint DEMO presentation."),
   m("CXUX-13695", "Governance", "Sharing", "Improve Sprint DEMO (TBD)", "todo", "Shikha Shukla", "Identify needs and issues in the Sprint DEMO presentation and resolve them."),
 
   // Governance / Audit - AI Assistant (CXUX-13123)
   m("CXUX-13478", "Governance", "Audit - AI Assistant", "Plan & Build Design System Audit Tool", "todo", "Lihi Shrem", ""),
   m("CXUX-13690", "Governance", "Audit - AI Assistant", "Kick off Audit AI Assistant for Design System", "done", "Erick Mathews", "Kick off the AI governance assistant project. Define scope, assign responsibilities, and prototype the first use case (component usage scanning or token drift detection)."),
-  m("CXUX-13692", "Governance", "Audit - AI Assistant", "Launch Audit AI Assistant for Design System Governance", "todo", "Erick Mathews", ""),
   m("CXUX-13691", "Governance", "Audit - AI Assistant", "Assess the current adoption and usage of the Design System across the Design team", "todo", "Sheetal Barge-Gole", ""),
+  m("CXUX-13692", "Governance", "Audit - AI Assistant", "DS Tokens", "in_progress", "Erick Mathews", ""),
+  m("CXUX-14039", "Governance", "Audit - AI Assistant", "DS Components", "in_progress", "Erick Mathews", ""),
+  m("CXUX-14040", "Governance", "Audit - AI Assistant", "Team Training (p1)", "todo", "Erick Mathews", ""),
+  m("CXUX-14042", "Governance", "Audit - AI Assistant", "DS Patterns", "todo", "Erick Mathews", ""),
+  m("CXUX-14041", "Governance", "Audit - AI Assistant", "Team Training (p2)", "todo", "Erick Mathews", ""),
 
   // Governance / Lyra QA Validation (CXUX-13738)
   m("CXUX-13739", "Governance", "Lyra QA Validation", "Discovery", "in_progress", "Simone Mimun", "Discuss with\n\n* Tzlil\n* Yael\n* Tonya\n* Ariel\n* Neha\n\nto understand "),
