@@ -7,17 +7,44 @@ export interface JiraProjectMeta {
   kpi: string
 }
 
-// Source of truth: JIRA epics under initiative CXUX-13120
-// Key: `${pillar}/${project}` — must match values in milestones.csv
+// Source of truth: JIRA epics under initiative CXUX-13120.
+// Key: `${pillar}/${project}` — pillar e project vengono dalla capability e dall'epic in JIRA,
+// non dal testo del summary del task. Ordine dei blocchi = rank delle capability (Governance >
+// Efficiency > Knowledge), lo stesso di `jira-milestones.ts`.
 const JIRA_PROJECTS: Record<string, JiraProjectMeta> = {
-  'Efficiency/JIRA Process for Design System': {
+  'Governance/Operating Model for Design System': {
     epicKey: 'CXUX-14034',
     description:
       'Governance model and JIRA operational process for managing the Design System, with shared ownership across UX, R&D, and PM through a Discovery Team. It covers Capability-based planning, the RFC process, prioritization criteria, design lead time, and communication responsibilities.',
     goal: "To bring structure, transparency, and shared accountability to Design System planning and delivery — ensuring priorities reflect business needs, design and development stay in sync, and every stakeholder has clear visibility into what's being built, when, and why.",
     kpi: '% of features delivered within the committed sprint/release (delivery predictability); % of features meeting the design lead-time window (2–6 sprints); Average RFC review turnaround time (creation to decision); % of RFCs approved on first pass vs. sent back for missing info; % of urgent/ad-hoc requests handled outside the 20% flexible quota; Design System component adoption rate (post-release usage); % of Capabilities closed with all sign-offs (Design, Eng, QA) completed',
   },
-  'Efficiency/AI Usage': {
+  'Governance/Sharing': {
+    epicKey: 'CXUX-13135',
+    description: 'Activities related to sharing work across the team.',
+    goal: 'TBD',
+    kpi: 'TBD',
+  },
+  'Governance/Audit - AI Assistant': {
+    epicKey: 'CXUX-13123',
+    description: 'An AI-powered tool that reviews design output and scores alignment with Design System standards.',
+    goal: 'x2 Governance and Consistency in NICE apps, using AI support.',
+    kpi: 'Tokens, Components and Patterns usage',
+  },
+  'Governance/Lyra QA Validation': {
+    epicKey: 'CXUX-13738',
+    description: 'QA validation of Lyra design output against Design System standards.',
+    goal: 'TBD',
+    kpi: 'TBD',
+  },
+  'Governance/Design System Committee': {
+    epicKey: 'CXUX-13136',
+    description:
+      'Human Committee for Design System Governance: Q&A sessions and critical decisions around the Design System.',
+    goal: 'x2 Governance in NICE apps, using human support.',
+    kpi: 'Design Patterns',
+  },
+  'Efficiency/AI Adoption': {
     epicKey: 'CXUX-13122',
     description: 'A structured program to increase design quality and team efficiency through practical AI adoption.',
     goal: 'x2 Efficiency for designers.',
@@ -42,31 +69,6 @@ const JIRA_PROJECTS: Record<string, JiraProjectMeta> = {
       'A practical guide that standardizes the UX process by defining methods, roles, tools, best practices, and expected deliverables — ensuring consistency, collaboration, and quality across projects.',
     goal: 'Engage 80% of the designers. Facilitate knowledge sharing by documenting UX processes, roles, tools, and best practices in a single reference guide.',
     kpi: 'Playbook adoption rate',
-  },
-  'Governance/Audit - AI Assistant': {
-    epicKey: 'CXUX-13123',
-    description: 'An AI-powered tool that reviews design output and scores alignment with Design System standards.',
-    goal: 'x2 Governance and Consistency in NICE apps, using AI support.',
-    kpi: 'Tokens, Components and Patterns usage',
-  },
-  'Governance/Sharing': {
-    epicKey: 'CXUX-13135',
-    description: 'Activities related to sharing work across the team.',
-    goal: 'TBD',
-    kpi: 'TBD',
-  },
-  'Governance/Design System Committee': {
-    epicKey: 'CXUX-13136',
-    description:
-      'Human Committee for Design System Governance: Q&A sessions and critical decisions around the Design System.',
-    goal: 'x2 Governance in NICE apps, using human support.',
-    kpi: 'Design Patterns',
-  },
-  'Governance/Lyra QA Validation': {
-    epicKey: 'CXUX-13738',
-    description: 'QA validation of Lyra design output against Design System standards.',
-    goal: 'TBD',
-    kpi: 'TBD',
   },
   'Knowledge/AI Training': {
     epicKey: 'CXUX-13137',

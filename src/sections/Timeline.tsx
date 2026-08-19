@@ -57,7 +57,7 @@ export function Timeline() {
 
         {/* Pillar legend */}
         <div className="flex gap-3 mb-12">
-          {(['Knowledge', 'Efficiency', 'Governance'] as Pillar[]).map(p => (
+          {(['Governance', 'Efficiency', 'Knowledge'] as Pillar[]).map(p => (
             <PillarBadge key={p} pillar={p} className="text-sm px-3 py-1" />
           ))}
         </div>

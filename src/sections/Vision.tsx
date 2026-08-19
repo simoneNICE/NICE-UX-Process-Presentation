@@ -1,4 +1,14 @@
+// Ordine = rank delle capability sotto l'initiative CXUX-13120 in JIRA
+// (Governance CXUX-13124 > Efficiency CXUX-13121 > Knowledge CXUX-13129).
 const PILLARS = [
+  {
+    icon: '🏛️',
+    label: 'Governance',
+    description: 'Establish clear standards, ownership, and quality checkpoints.',
+    gradient: 'from-violet-500 to-purple-400',
+    bg: 'from-violet-50 to-white',
+    border: 'border-violet-100',
+  },
   {
     icon: '⚡',
     label: 'Efficiency',
@@ -14,14 +24,6 @@ const PILLARS = [
     gradient: 'from-blue-500 to-indigo-400',
     bg: 'from-blue-50 to-white',
     border: 'border-blue-100',
-  },
-  {
-    icon: '🏛️',
-    label: 'Governance',
-    description: 'Establish clear standards, ownership, and quality checkpoints.',
-    gradient: 'from-violet-500 to-purple-400',
-    bg: 'from-violet-50 to-white',
-    border: 'border-violet-100',
   },
 ]
 

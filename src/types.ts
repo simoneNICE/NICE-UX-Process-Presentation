@@ -1,4 +1,4 @@
-export type Pillar = 'Knowledge' | 'Efficiency' | 'Governance'
+export type Pillar = 'Governance' | 'Efficiency' | 'Knowledge'
 
 export type MilestoneStatus = 'todo' | 'in_progress' | 'done'
 

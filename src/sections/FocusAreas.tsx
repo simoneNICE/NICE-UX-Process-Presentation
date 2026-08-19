@@ -31,7 +31,9 @@ const PILLAR_META: Record<Pillar, { icon: string; description: string; gradient:
   },
 }
 
-const PILLARS: Pillar[] = ['Knowledge', 'Efficiency', 'Governance']
+// Ordine = rank delle capability sotto l'initiative CXUX-13120 in JIRA
+// (Governance CXUX-13124 > Efficiency CXUX-13121 > Knowledge CXUX-13129).
+const PILLARS: Pillar[] = ['Governance', 'Efficiency', 'Knowledge']
 
 function getProgress() {
   const today = new Date()
@@ -135,6 +137,11 @@ export function FocusAreas() {
             </div>
           </div>
         </div>
+
+        {/* Sottotitolo del tree — introduce i tre pillar */}
+        <p className="text-muted-foreground text-lg mb-3">
+          Three directions to improve how the team works.
+        </p>
 
         {/* Tree controls — espandi / comprimi tutto */}
         <div className="flex items-center gap-3 mb-5">
