@@ -18,7 +18,7 @@ export function Resources() {
         <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-blue-50 rounded-full blur-3xl opacity-50" />
       </div>
 
-      <div className="max-w-6xl mx-auto px-8 relative z-10">
+      <div className="max-w-2xl mx-auto px-8 relative z-10">
         <h2 className="text-5xl font-extrabold mb-3">
           <span className="text-gradient-primary">Resources</span>
         </h2>

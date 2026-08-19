@@ -33,7 +33,7 @@ export function Vision() {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-blue-50 rounded-full blur-3xl opacity-60" />
       </div>
 
-      <div className="max-w-5xl mx-auto px-8 relative z-10">
+      <div className="max-w-2xl mx-auto px-8 relative z-10">
         <h2 className="text-5xl font-extrabold mb-4">
           <span className="text-gradient-primary">Vision</span>
         </h2>
@@ -44,7 +44,7 @@ export function Vision() {
           all accelerated by AI.
         </p>
 
-        <div className="grid grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6">
           {PILLARS.map((p) => (
             <div
               key={p.label}

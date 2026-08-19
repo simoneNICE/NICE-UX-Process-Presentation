@@ -27,7 +27,7 @@ function MemberCard({ member, small = false }: { member: TeamMember; small?: boo
 export function Team() {
   return (
     <section id="team" className="py-28 gradient-page">
-      <div className="max-w-6xl mx-auto px-8">
+      <div className="max-w-2xl mx-auto px-8">
         <h2 className="text-5xl font-extrabold mb-3">
           <span className="text-gradient-primary">Team</span>
         </h2>

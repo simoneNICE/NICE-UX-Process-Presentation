@@ -6,7 +6,7 @@ const EMAIL = 'Simone.Mimun@nice.com'
 export function Contacts() {
   return (
     <section id="contacts" className="py-24 bg-white border-t border-border">
-      <div className="max-w-6xl mx-auto px-8">
+      <div className="max-w-2xl mx-auto px-8">
         <h2 className="text-5xl font-extrabold mb-4">
           <span className="text-gradient-primary">Contact</span>
         </h2>

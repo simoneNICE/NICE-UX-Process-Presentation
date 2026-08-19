@@ -26,7 +26,7 @@ export function Timeline() {
 
   return (
     <section id="timeline" className="pt-16 min-h-screen gradient-page">
-      <div className="max-w-4xl mx-auto px-8 py-16">
+      <div className="max-w-2xl mx-auto px-8 py-16">
 
         <div className="mb-14">
           <h2 className="text-5xl font-extrabold mb-3">
@@ -67,7 +67,7 @@ export function Timeline() {
           <div className="mb-12">
             <div className="relative">
               <div className={`absolute ${SPINE_POS} top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-200 via-border to-border`} />
-              <div className="space-y-1">
+              <div className="space-y-2">
                 {sprintGroups.map(group => (
                   <SprintBlock key={group.sprint.id} sprint={group.sprint} milestones={group.milestones} />
                 ))}
@@ -86,9 +86,9 @@ export function Timeline() {
               </span>
               <div className="h-px flex-1 bg-border/60" />
             </div>
-            <div className="flex flex-row flex-wrap gap-2">
+            <div className="flex flex-row flex-wrap gap-3">
               {unscheduled.map((m, i) => (
-                <div key={i} className="w-[calc(33.333%-6px)] min-w-[160px]">
+                <div key={i} className="w-[calc(33.333%-8px)] min-w-[180px]">
                   <MilestoneChip milestone={m} />
                 </div>
               ))}
@@ -111,7 +111,7 @@ function SprintBlock({ sprint, milestones }: { sprint: { label: string; startDat
   )
 
   return (
-    <div className="relative flex items-start py-3">
+    <div className="relative flex items-start py-4">
       <div className={`${DATE_COL} flex-shrink-0 pr-5 text-right`}>
         <div className="flex flex-col items-end leading-none gap-0.5">
           <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
@@ -126,15 +126,15 @@ function SprintBlock({ sprint, milestones }: { sprint: { label: string; startDat
 
       <div className={dotClass} style={{ marginTop: '6px' }} />
 
-      <div className="flex-1 pl-6 flex flex-row flex-wrap gap-2 content-start">
+      <div className="flex-1 pl-7 flex flex-row flex-wrap gap-3 content-start">
         {milestones.map((m, idx) => {
           const isNewProject = idx > 0 && m.project !== milestones[idx - 1].project
           return (
             <Fragment key={idx}>
               {isNewProject && (
-                <div className="w-full h-px my-1 bg-border" aria-hidden="true" />
+                <div className="w-full h-px my-2 bg-border" aria-hidden="true" />
               )}
-              <div className="w-[calc(33.333%-6px)] min-w-[160px]">
+              <div className="w-[calc(33.333%-8px)] min-w-[180px]">
                 <MilestoneChip milestone={m} />
               </div>
             </Fragment>
@@ -173,20 +173,20 @@ function DoneChip({ milestone, onClick }: { milestone: Milestone; onClick: () =>
     <button
       onClick={onClick}
       className={cn(
-        'relative flex items-start gap-3 px-4 py-3 rounded-xl border shadow-md overflow-hidden w-full text-left cursor-pointer transition-all hover:scale-[1.02] hover:shadow-lg group',
+        'relative flex items-start gap-3.5 px-5 py-4 rounded-xl border shadow-md overflow-hidden w-full text-left cursor-pointer transition-all hover:scale-[1.02] hover:shadow-lg group',
         ds.card
       )}
     >
       <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent pointer-events-none" />
       <CheckCircle2 className="w-5 h-5 text-white flex-shrink-0 mt-0.5 drop-shadow" />
       <div className="flex-1 min-w-0">
-        <div className={cn('text-[9px] font-bold uppercase tracking-widest mb-1', ds.subtext)}>✓ Done</div>
+        <div className={cn('text-[9px] font-bold uppercase tracking-widest mb-1.5', ds.subtext)}>✓ Done</div>
         <p className="text-sm font-bold leading-snug text-white">{milestone.title}</p>
-        <div className="mt-1.5 inline-flex items-center gap-1.5 text-xs font-semibold px-2 py-0.5 rounded-full border bg-white/20 border-white/30 text-white">
+        <div className="mt-2.5 inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border bg-white/20 border-white/30 text-white">
           <span className="w-1.5 h-1.5 rounded-full bg-white/80 flex-shrink-0" />
           {milestone.pillar}
         </div>
-        {milestone.person && <div className={cn('text-[10px] mt-1', ds.subtext)}>{milestone.person}</div>}
+        {milestone.person && <div className={cn('text-[10px] mt-2', ds.subtext)}>{milestone.person}</div>}
       </div>
       <ChevronRight className="w-4 h-4 text-white/50 flex-shrink-0 mt-0.5 group-hover:text-white/90 transition-colors" />
     </button>
@@ -199,15 +199,15 @@ function PendingChip({ milestone, onClick }: { milestone: Milestone; onClick: ()
     <button
       onClick={onClick}
       className={cn(
-        'flex items-start gap-3 px-4 py-3 rounded-xl border shadow-sm transition-all hover:shadow-md hover:scale-[1.02] w-full text-left cursor-pointer group',
+        'flex items-start gap-3.5 px-5 py-4 rounded-xl border shadow-sm transition-all hover:shadow-md hover:scale-[1.02] w-full text-left cursor-pointer group',
         c.bg, c.border, c.glow
       )}
     >
       <Circle className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: c.iconColor }} />
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold leading-snug text-foreground">{milestone.title}</p>
-        <PillarBadge pillar={milestone.pillar} className="mt-1.5" />
-        {milestone.person && <div className="text-[10px] text-muted-foreground mt-1">{milestone.person}</div>}
+        <PillarBadge pillar={milestone.pillar} className="mt-2.5" />
+        {milestone.person && <div className="text-[10px] text-muted-foreground mt-2">{milestone.person}</div>}
       </div>
       <ChevronRight className="w-4 h-4 text-muted-foreground/40 flex-shrink-0 mt-0.5 group-hover:text-muted-foreground transition-colors" />
     </button>
@@ -220,19 +220,19 @@ function InProgressChip({ milestone, onClick }: { milestone: Milestone; onClick:
     <button
       onClick={onClick}
       className={cn(
-        'flex items-start gap-3 px-4 py-3 rounded-xl border border-dashed shadow-sm transition-all hover:shadow-md hover:scale-[1.02] w-full text-left cursor-pointer group',
+        'flex items-start gap-3.5 px-5 py-4 rounded-xl border border-dashed shadow-sm transition-all hover:shadow-md hover:scale-[1.02] w-full text-left cursor-pointer group',
         c.bg, c.border
       )}
     >
       <Clock className="w-5 h-5 flex-shrink-0 mt-0.5 animate-pulse" style={{ color: c.iconColor }} />
       <div className="flex-1 min-w-0">
-        <div className={cn('text-[9px] font-bold uppercase tracking-widest mb-1', c.text)}>⟳ In Progress</div>
+        <div className={cn('text-[9px] font-bold uppercase tracking-widest mb-1.5', c.text)}>⟳ In Progress</div>
         <p className="text-sm font-semibold leading-snug text-foreground">{milestone.title}</p>
-        <div className={cn('flex items-center gap-1.5 mt-1.5 text-xs font-semibold px-2 py-0.5 rounded-full border inline-flex w-fit', c.bg, c.border, c.text)}>
+        <div className={cn('flex items-center gap-1.5 mt-2.5 text-xs font-semibold px-2.5 py-1 rounded-full border inline-flex w-fit', c.bg, c.border, c.text)}>
           <span className={cn('w-1.5 h-1.5 rounded-full flex-shrink-0', c.dot)} />
           {milestone.pillar}
         </div>
-        {milestone.person && <div className="text-[10px] text-muted-foreground mt-1">{milestone.person}</div>}
+        {milestone.person && <div className="text-[10px] text-muted-foreground mt-2">{milestone.person}</div>}
       </div>
       <ChevronRight className="w-4 h-4 text-muted-foreground/40 flex-shrink-0 mt-0.5 group-hover:text-muted-foreground transition-colors" />
     </button>
@@ -251,11 +251,11 @@ function MilestoneModal({ milestone, onClose }: { milestone: Milestone; onClose:
       onClick={onClose}
     >
       <div
-        className="relative bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden"
+        className="relative bg-white rounded-2xl shadow-2xl max-w-xl w-full overflow-hidden"
         onClick={e => e.stopPropagation()}
       >
         <div className={cn(
-          'px-6 py-5',
+          'px-7 py-6',
           isDone
             ? cn('bg-gradient-to-r', ds.card)
             : isInProgress
@@ -291,7 +291,7 @@ function MilestoneModal({ milestone, onClose }: { milestone: Milestone; onClose:
           </div>
         </div>
 
-        <div className="px-6 pt-4 pb-2 flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-muted-foreground border-b border-border/60">
+        <div className="px-7 pt-5 pb-4 flex flex-wrap gap-x-6 gap-y-2 text-xs text-muted-foreground border-b border-border/60">
           {milestone.sprint && (
             <>
               <span className="flex items-center gap-1.5 font-semibold text-foreground">
@@ -316,11 +316,11 @@ function MilestoneModal({ milestone, onClose }: { milestone: Milestone; onClose:
           </a>
         </div>
 
-        <div className="px-6 py-5">
+        <div className="px-7 py-7">
           {milestone.details ? (
             <p className="text-sm text-foreground/80 leading-relaxed">{milestone.details}</p>
           ) : (
-            <div className="text-sm text-muted-foreground italic text-center py-8 border border-dashed border-border rounded-xl bg-muted/30">
+            <div className="text-sm text-muted-foreground italic text-center py-10 border border-dashed border-border rounded-xl bg-muted/30">
               Details coming soon — TBD
             </div>
           )}

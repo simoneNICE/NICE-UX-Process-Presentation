@@ -52,33 +52,46 @@ function groupByProject(ms: Milestone[]): Map<string, Milestone[]> {
   return map
 }
 
-function milestoneMatchesPerson(m: Milestone, selected: Set<string>): boolean {
-  return selected.has(m.person)
-}
-
 export function FocusAreas() {
   const { pct, done, total } = getProgress()
 
-  const [selectedPersons, setSelectedPersons] = useState<Set<string>>(new Set())
+  // Tree collapse/expand — default: tutto chiuso (solo le righe dei pillar)
+  const [expandedPillars, setExpandedPillars] = useState<Set<Pillar>>(() => new Set())
+  const [expandedProjects, setExpandedProjects] = useState<Set<string>>(() => new Set())
 
-  const personCounts = useMemo(() => {
-    const map = new Map<string, number>()
-    milestones.forEach(m => {
-      if (m.person) map.set(m.person, (map.get(m.person) ?? 0) + 1)
-    })
-    return [...map.entries()].sort((a, b) => b[1] - a[1])
+  const allProjectKeys = useMemo(() => {
+    const s = new Set<string>()
+    milestones.forEach(m => s.add(`${m.pillar}::${m.project}`))
+    return s
   }, [])
 
-  const togglePerson = (person: string) => {
-    setSelectedPersons(prev => {
+  const togglePillar = (pillar: Pillar) => {
+    setExpandedPillars(prev => {
       const next = new Set(prev)
-      if (next.has(person)) next.delete(person)
-      else next.add(person)
+      if (next.has(pillar)) next.delete(pillar)
+      else next.add(pillar)
       return next
     })
   }
 
-  const isFiltered = selectedPersons.size > 0
+  const toggleProject = (key: string) => {
+    setExpandedProjects(prev => {
+      const next = new Set(prev)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
+      return next
+    })
+  }
+
+  const expandAll = () => {
+    setExpandedPillars(new Set(PILLARS))
+    setExpandedProjects(new Set(allProjectKeys))
+  }
+
+  const collapseAll = () => {
+    setExpandedPillars(new Set())
+    setExpandedProjects(new Set())
+  }
 
   return (
     <section id="vision" className="py-24 bg-white relative overflow-hidden">
@@ -86,10 +99,10 @@ export function FocusAreas() {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[300px] bg-blue-50 rounded-full blur-3xl opacity-50" />
       </div>
 
-      <div className="max-w-6xl mx-auto px-8 relative z-10">
+      <div className="max-w-3xl mx-auto px-8 relative z-10">
 
         {/* Vision intro */}
-        <div className="mb-12">
+        <div className="mb-14">
           <h2 className="text-5xl font-extrabold mb-4">
             <span className="text-gradient-primary">The Project</span>
           </h2>
@@ -123,118 +136,98 @@ export function FocusAreas() {
           </div>
         </div>
 
-        {/* Person filter */}
-        {personCounts.length > 0 && (
-          <div className="flex flex-wrap items-center gap-2 mb-8">
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mr-1">Filter by:</span>
-            {personCounts.map(([person, count]) => {
-              const active = selectedPersons.has(person)
-              return (
-                <button
-                  key={person}
-                  onClick={() => togglePerson(person)}
-                  className={cn(
-                    'flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm font-medium transition-all duration-200',
-                    active
-                      ? 'bg-foreground text-background border-foreground shadow-md scale-105'
-                      : 'bg-white text-foreground border-border hover:border-foreground/40 hover:shadow-sm'
-                  )}
-                >
-                  {person}
-                  <span className={cn(
-                    'text-[11px] font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center transition-colors duration-200',
-                    active ? 'bg-white/20 text-background' : 'bg-muted text-muted-foreground'
-                  )}>
-                    {count}
-                  </span>
-                </button>
-              )
-            })}
-            {isFiltered && (
-              <button
-                onClick={() => setSelectedPersons(new Set())}
-                className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs text-muted-foreground hover:text-foreground border border-dashed border-border hover:border-foreground/40 transition-all duration-200"
-              >
-                <X className="w-3 h-3" />
-                Clear
-              </button>
-            )}
-          </div>
-        )}
+        {/* Tree controls — espandi / comprimi tutto */}
+        <div className="flex items-center gap-3 mb-5">
+          <button
+            onClick={expandAll}
+            className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Expand all
+          </button>
+          <span className="text-border">·</span>
+          <button
+            onClick={collapseAll}
+            className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Collapse all
+          </button>
+        </div>
 
-        {/* Pillar columns */}
-        <div className="grid grid-cols-3 gap-6 mb-10">
+        {/* Roadmap tree — Pillar › Progetto › Step */}
+        <div className="rounded-2xl border border-border bg-white shadow-sm overflow-hidden divide-y divide-border mb-12">
           {PILLARS.map(pillar => {
             const c = PILLAR_CONFIG[pillar]
             const meta = PILLAR_META[pillar]
             const pillarMilestones = milestones.filter(m => m.pillar === pillar)
             const byProject = groupByProject(pillarMilestones)
             const doneCount = pillarMilestones.filter(m => m.status === 'done').length
+            const pillarOpen = expandedPillars.has(pillar)
 
             return (
-              <div
-                key={pillar}
-                className="flex flex-col rounded-2xl bg-white shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300"
-              >
-                <div className={`h-1 bg-gradient-to-r ${meta.gradient}`} />
+              <div key={pillar}>
+                {/* Livello 1 — Pillar */}
+                <button
+                  onClick={() => togglePillar(pillar)}
+                  className="w-full flex items-center gap-4 px-7 py-6 text-left transition-colors hover:bg-muted/40"
+                >
+                  <ChevronRight className={cn(
+                    'w-5 h-5 flex-shrink-0 transition-transform duration-200',
+                    c.text,
+                    pillarOpen && 'rotate-90'
+                  )} />
+                  <span className="text-2xl leading-none">{meta.icon}</span>
+                  <h3 className="text-xl font-black text-foreground tracking-tight">{pillar}</h3>
+                  <span className={cn('ml-auto flex-shrink-0 text-xs font-bold px-3 py-1.5 rounded-full border', c.bg, c.text, c.border)}>
+                    {doneCount}/{pillarMilestones.length}
+                  </span>
+                </button>
 
-                <div className="px-6 pt-6 pb-5">
-                  <div className="text-3xl mb-3">{meta.icon}</div>
-                  <h3 className="text-2xl font-black text-foreground mb-1 tracking-tight">{pillar}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed mb-4">{meta.description}</p>
+                {/* Contenuto pillar espanso */}
+                {pillarOpen && (
+                  <div className="px-7 pb-7">
+                    <p className="text-sm text-muted-foreground leading-relaxed mb-6 max-w-2xl pl-9">{meta.description}</p>
 
-                  <div className="flex items-center gap-3">
-                    <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-                      <div
-                        className={`h-full bg-gradient-to-r ${meta.gradient} rounded-full transition-all duration-700`}
-                        style={{ width: `${(doneCount / Math.max(pillarMilestones.length, 1)) * 100}%` }}
-                      />
-                    </div>
-                    <span className={cn('text-xs font-semibold', c.text)}>
-                      {doneCount}/{pillarMilestones.length}
-                    </span>
-                  </div>
-
-                  {meta.kpis && (
-                    <div className="mt-4 overflow-hidden rounded-lg border border-border">
-                      <table className="w-full text-xs">
-                        <thead>
-                          <tr className={cn('border-b border-border', c.bg)}>
-                            <th className={cn('px-3 py-2 text-left font-bold uppercase tracking-wider', c.text)}>KPI</th>
-                            <th className={cn('px-3 py-2 text-right font-bold uppercase tracking-wider', c.text)}>Target</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {meta.kpis.map((kpi, i) => (
-                            <tr key={i} className={cn('border-b border-border/50 last:border-0', i % 2 === 0 ? 'bg-white' : c.bg)}>
-                              <td className="px-3 py-2 text-foreground/80">{kpi.label}</td>
-                              <td className={cn('px-3 py-2 text-right font-bold tabular-nums', c.text)}>{kpi.target}</td>
+                    {meta.kpis && (
+                      <div className="mb-6 ml-9 overflow-hidden rounded-lg border border-border max-w-xl">
+                        <table className="w-full text-xs">
+                          <thead>
+                            <tr className={cn('border-b border-border', c.bg)}>
+                              <th className={cn('px-4 py-3 text-left font-bold uppercase tracking-wider', c.text)}>KPI</th>
+                              <th className={cn('px-4 py-3 text-right font-bold uppercase tracking-wider', c.text)}>Target</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                          </thead>
+                          <tbody>
+                            {meta.kpis.map((kpi, i) => (
+                              <tr key={i} className={cn('border-b border-border/50 last:border-0', i % 2 === 0 ? 'bg-white' : c.bg)}>
+                                <td className="px-4 py-2.5 text-foreground/80">{kpi.label}</td>
+                                <td className={cn('px-4 py-2.5 text-right font-bold tabular-nums', c.text)}>{kpi.target}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+
+                    {/* Livello 2 — Progetti, con guida verticale */}
+                    <div className={cn('ml-4 pl-5 border-l-2 space-y-2', c.border)}>
+                      {byProject.size === 0 && (
+                        <p className="text-xs text-muted-foreground/50 italic py-4 pl-4">
+                          No milestones yet
+                        </p>
+                      )}
+                      {[...byProject.entries()].map(([project, items]) => (
+                        <ProjectGroup
+                          key={project}
+                          project={project}
+                          milestones={items}
+                          pillar={pillar}
+                          open={expandedProjects.has(`${pillar}::${project}`)}
+                          onToggle={() => toggleProject(`${pillar}::${project}`)}
+                        />
+                      ))}
                     </div>
-                  )}
-                </div>
-
-                <div className={cn('mx-6 border-t', c.border)} />
-
-                <div className="flex-1 p-5 space-y-6">
-                  {byProject.size === 0 && (
-                    <p className="text-xs text-muted-foreground/50 italic text-center py-6">
-                      No milestones yet
-                    </p>
-                  )}
-                  {[...byProject.entries()].map(([project, items]) => (
-                    <ProjectGroup
-                      key={project}
-                      project={project}
-                      milestones={items}
-                      pillar={pillar}
-                      selectedPersons={selectedPersons}
-                    />
-                  ))}
-                </div>
+                  </div>
+                )}
               </div>
             )
           })}
@@ -244,20 +237,15 @@ export function FocusAreas() {
   )
 }
 
-function ProjectGroup({ project, milestones, pillar, selectedPersons }: {
+function ProjectGroup({ project, milestones, pillar, open, onToggle }: {
   project: string
   milestones: Milestone[]
   pillar: Pillar
-  selectedPersons: Set<string>
+  open: boolean
+  onToggle: () => void
 }) {
   const c = PILLAR_CONFIG[pillar]
   const doneCount = milestones.filter(m => m.status === 'done').length
-  const isFiltered = selectedPersons.size > 0
-  const visibleCount = isFiltered
-    ? milestones.filter(m => milestoneMatchesPerson(m, selectedPersons)).length
-    : milestones.length
-
-  if (isFiltered && visibleCount === 0) return null
 
   const first = milestones[0]
   const description = first?.projectDescription
@@ -266,81 +254,88 @@ function ProjectGroup({ project, milestones, pillar, selectedPersons }: {
   const epicKey = getProjectMeta(pillar, project)?.epicKey
 
   return (
-    <div className="rounded-xl border border-border bg-muted/20 p-4 shadow-sm">
-      <div className="flex items-center justify-between mb-1">
-        <div className="flex items-center gap-2 min-w-0">
-          <h4 className="text-lg font-extrabold text-foreground">{project}</h4>
-          {epicKey && (
-            <a
-              href={`https://nice-ce-cxone-prod.atlassian.net/browse/${epicKey}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[10px] font-semibold text-blue-400 hover:text-blue-600 hover:underline flex-shrink-0"
-            >
-              {epicKey} ↗
-            </a>
-          )}
-        </div>
-        <span className={cn('text-[10px] font-semibold px-2 py-0.5 rounded-full border transition-all duration-300 flex-shrink-0 ml-2', c.bg, c.text, c.border)}>
-          {isFiltered ? `${visibleCount}/` : ''}{doneCount}/{milestones.length}
+    <div>
+      {/* Livello 2 — riga progetto */}
+      <div className="flex items-center gap-3 pl-4 pr-4 py-3.5 rounded-lg transition-colors hover:bg-muted/50">
+        <button
+          onClick={onToggle}
+          className="flex items-center gap-3 flex-1 min-w-0 text-left"
+        >
+          <ChevronRight className={cn(
+            'w-4 h-4 flex-shrink-0 text-muted-foreground transition-transform duration-200',
+            open && 'rotate-90'
+          )} />
+          <span className="text-base font-extrabold text-foreground truncate">{project}</span>
+        </button>
+        {epicKey && (
+          <a
+            href={`https://nice-ce-cxone-prod.atlassian.net/browse/${epicKey}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[10px] font-semibold text-blue-400 hover:text-blue-600 hover:underline flex-shrink-0"
+          >
+            {epicKey} ↗
+          </a>
+        )}
+        <span className={cn('flex-shrink-0 text-[10px] font-semibold px-2.5 py-1 rounded-full border', c.bg, c.text, c.border)}>
+          {doneCount}/{milestones.length}
         </span>
       </div>
 
-      {(description || goal || kpi) && (
-        <div className="mb-5 space-y-4">
-          {description && (
-            <ExpandableText text={description} className="text-sm text-foreground/70 leading-relaxed" />
-          )}
-          {(goal || kpi) && (
-            <div className="space-y-3">
-              {goal && (
-                <div className="space-y-1">
-                  <span className={cn('text-[10px] font-bold uppercase tracking-widest block', c.text)}>Goal</span>
-                  <ExpandableText text={goal} className="text-sm text-foreground/80 leading-relaxed" />
-                </div>
+      {/* Contenuto progetto espanso — info + step */}
+      {open && (
+        <div className="pl-11 pr-3 pb-5 pt-2">
+          {(description || goal || kpi) && (
+            <div className="mb-6 space-y-5">
+              {description && (
+                <ExpandableText text={description} className="text-sm text-foreground/70 leading-relaxed" />
               )}
-              {kpi && (
-                <div className="space-y-1">
-                  <span className={cn('text-[10px] font-bold uppercase tracking-widest block', c.text)}>KPI</span>
-                  <p className="text-sm text-foreground/80 leading-relaxed">{kpi}</p>
+              {(goal || kpi) && (
+                <div className="space-y-3">
+                  {goal && (
+                    <div className="space-y-1">
+                      <span className={cn('text-[10px] font-bold uppercase tracking-widest block', c.text)}>Goal</span>
+                      <ExpandableText text={goal} className="text-sm text-foreground/80 leading-relaxed" />
+                    </div>
+                  )}
+                  {kpi && (
+                    <div className="space-y-1">
+                      <span className={cn('text-[10px] font-bold uppercase tracking-widest block', c.text)}>KPI</span>
+                      <p className="text-sm text-foreground/80 leading-relaxed">{kpi}</p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
           )}
+
+          <div className="mb-3">
+            <span className={cn('text-[10px] font-bold uppercase tracking-widest', c.text)}>Steps</span>
+          </div>
+          {/* Livello 3 — step, con guida verticale */}
+          <ul className={cn('space-y-3 border-l-2 pl-5', c.border)}>
+            {milestones.map((m, i) => (
+              <MilestoneItem key={i} milestone={m} />
+            ))}
+          </ul>
         </div>
       )}
-
-      <div className="mb-2">
-        <span className={cn('text-[10px] font-bold uppercase tracking-widest', c.text)}>Steps</span>
-      </div>
-      <ul className="space-y-1.5">
-        {milestones.map((m, i) => (
-          <MilestoneItem
-            key={i}
-            milestone={m}
-            visible={!isFiltered || milestoneMatchesPerson(m, selectedPersons)}
-          />
-        ))}
-      </ul>
     </div>
   )
 }
 
-function MilestoneItem({ milestone, visible = true }: { milestone: Milestone; visible?: boolean }) {
+function MilestoneItem({ milestone }: { milestone: Milestone }) {
   const [open, setOpen] = useState(false)
   const c = PILLAR_CONFIG[milestone.pillar]
   const meta = PILLAR_META[milestone.pillar]
 
   return (
     <>
-      <li className={cn(
-        'transition-all duration-300 ease-in-out overflow-hidden',
-        visible ? 'opacity-100 max-h-64' : 'opacity-0 max-h-0 pointer-events-none'
-      )}>
+      <li>
         <button
           onClick={() => setOpen(true)}
           className={cn(
-            'w-full flex items-start gap-2.5 px-3 py-2.5 rounded-xl border text-left transition-all group',
+            'w-full flex items-start gap-3.5 px-5 py-4 rounded-xl border text-left transition-all group',
             milestone.status === 'done'
               ? `bg-gradient-to-br ${meta.gradient} border-transparent shadow-sm`
               : milestone.status === 'in_progress'
@@ -357,12 +352,12 @@ function MilestoneItem({ milestone, visible = true }: { milestone: Milestone; vi
           <div className="flex-1 min-w-0">
             {/* Status — chip distinto, staccato dal titolo */}
             {milestone.status === 'done' && (
-              <span className="inline-flex items-center text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded-md mb-2 bg-white/20 text-white">
+              <span className="inline-flex items-center text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded-md mb-2.5 bg-white/20 text-white">
                 ✓ Done
               </span>
             )}
             {milestone.status === 'in_progress' && (
-              <span className={cn('inline-flex items-center text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded-md mb-2 bg-white/70 border', c.text, c.border)}>
+              <span className={cn('inline-flex items-center text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded-md mb-2.5 bg-white/70 border', c.text, c.border)}>
                 ⟳ In Progress
               </span>
             )}
@@ -377,7 +372,7 @@ function MilestoneItem({ milestone, visible = true }: { milestone: Milestone; vi
 
             {milestone.sprint && (
               <div className={cn(
-                'flex items-center gap-2 mt-1.5',
+                'flex items-center gap-2 mt-3',
                 milestone.status === 'done' ? 'text-white/70' : 'text-muted-foreground/70'
               )}>
                 <span className={cn(
@@ -395,7 +390,7 @@ function MilestoneItem({ milestone, visible = true }: { milestone: Milestone; vi
             {/* Owner — separato con divider */}
             {milestone.person && (
               <div className={cn(
-                'flex items-center gap-1.5 mt-2 pt-2 border-t',
+                'flex items-center gap-2 mt-3.5 pt-3 border-t',
                 milestone.status === 'done' ? 'border-white/20' : 'border-border'
               )}>
                 <span className={cn('text-[9px] font-semibold uppercase tracking-widest', milestone.status === 'done' ? 'text-white/50' : 'text-muted-foreground')}>Owner</span>
@@ -460,11 +455,11 @@ function MilestoneModal({ milestone, onClose }: { milestone: Milestone; onClose:
       onClick={onClose}
     >
       <div
-        className="relative bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden"
+        className="relative bg-white rounded-2xl shadow-2xl max-w-xl w-full overflow-hidden"
         onClick={e => e.stopPropagation()}
       >
         <div className={cn(
-          'px-6 py-5 border-b',
+          'px-7 py-6 border-b',
           isDone
             ? `bg-gradient-to-r ${meta.gradient}`
             : isInProgress
@@ -498,7 +493,7 @@ function MilestoneModal({ milestone, onClose }: { milestone: Milestone; onClose:
           </div>
         </div>
 
-        <div className="px-6 pt-4 pb-2 flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-muted-foreground border-b border-border/60">
+        <div className="px-7 pt-5 pb-4 flex flex-wrap gap-x-6 gap-y-2 text-xs text-muted-foreground border-b border-border/60">
           {milestone.sprint && (
             <>
               <span className="flex items-center gap-1.5 font-semibold text-foreground">
@@ -523,11 +518,11 @@ function MilestoneModal({ milestone, onClose }: { milestone: Milestone; onClose:
           </a>
         </div>
 
-        <div className="px-6 py-5">
+        <div className="px-7 py-7">
           {milestone.details ? (
             <p className="text-sm text-foreground/80 leading-relaxed">{milestone.details}</p>
           ) : (
-            <div className="text-sm text-muted-foreground italic text-center py-8 border border-dashed border-border rounded-xl bg-muted/30">
+            <div className="text-sm text-muted-foreground italic text-center py-10 border border-dashed border-border rounded-xl bg-muted/30">
               Details coming soon — TBD
             </div>
           )}

@@ -24,6 +24,31 @@ Modificare un colore = modificare solo src/index.css
 
 ---
 
+## Spacing — ritmo del respiro
+
+Scala unica per tutto il sito. Non usare valori intermedi fuori da questa lista.
+
+| Elemento | Padding | Note |
+|---|---|---|
+| Colonna contenuto (Roadmap) | `max-w-3xl` + `px-8` | Timeline resta `max-w-4xl` per la spina temporale |
+| Riga di primo livello (Pillar) | `px-7 py-6` | `gap-4` tra chevron, icona e titolo |
+| Contenuto espanso di primo livello | `px-7 pb-7` | indent testo `pl-9`, allineato al titolo |
+| Riga di secondo livello (Progetto) | `px-4 py-3.5` | `gap-3` |
+| Contenuto espanso di secondo livello | `pl-11 pr-3 pb-5 pt-2` | |
+| Card / chip milestone | `px-5 py-4` | `gap-3.5` tra icona e contenuto |
+| Chip di stato e conteggio | `px-2.5 py-1` | mai sotto `py-1` |
+| Celle tabella KPI | `px-4 py-2.5` | header `py-3` |
+| Modal | `px-7`, header `py-6`, corpo `py-7` | larghezza `max-w-xl` |
+
+Dentro le card: blocco successivo a `mt-2.5`, divider owner a `mt-3.5 pt-3`.
+Tra card sorelle: `space-y-3` in lista verticale, `gap-3` in griglia.
+
+**Perché**: il layout è denso di livelli annidati (Pillar › Progetto › Step). Con padding
+stretti i livelli si leggono come un blocco unico. Se serve comprimere, riduci il numero di
+livelli aperti di default, non il padding.
+
+---
+
 ## Pattern base
 
 ### ConfirmDialog
