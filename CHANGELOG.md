@@ -31,5 +31,6 @@
 - Il progetto "AI Usage" si chiama ora "AI Adoption", come in JIRA
 
 ### Bug fix
+- I task cancellati in JIRA (stato "Removed") non appaiono più sul sito. Prima erano mostrati come lavoro ancora da fare: tolti "Plan & Build Design System Audit Tool", "100% JIRA Engagement for Researchers" e "100% JIRA Engagement for Designers"
 - I task ora appaiono nello stesso ordine in cui sono in JIRA. Prima erano ordinati per numero di ticket, quindi in tre progetti (AI Training, AI Adoption, Audit - AI Assistant) la sequenza mostrata non corrispondeva a quella del backlog
 - "AI Usage Interviews - 4 Designers (1)" era mostrato nello sprint 193, ormai chiuso: ora appare nello sprint 194, quello in corso, come in JIRA

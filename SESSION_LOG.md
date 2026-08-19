@@ -149,3 +149,34 @@ Rifatto il sync su richiesta di Simone. Nel frattempo JIRA era cambiato: 45 task
 - Verifica visiva a 1024 / 1440 / 1920px non eseguita
 - Restano aperte le segnalazioni della sessione precedente: 3 capability segnaposto `XXXX` e l'epic
   Playbook in stato Removed
+
+---
+
+## 2026-08-19 — Sottotitolo Roadmap + esclusi i task Removed
+
+✅ Completato
+- `FocusAreas.tsx`: sottotitolo sopra i pulsanti Expand all / Collapse all — "Three directions to
+  improve how the team works" (`text-muted-foreground text-lg`, stesso stile degli altri sottotitoli
+  di sezione, nessun pattern nuovo)
+- **Decisione di Simone: i task in stato `Removed` non vanno sul sito.** Non si mappano più a `todo`:
+  si scartano. Rimossi da `jira-milestones.ts` CXUX-13478 (Audit - AI Assistant), CXUX-13685 e
+  CXUX-13686 (JIRA Process) → da 45 a 42 task
+- `.claude/commands/sync-jira.md`: nuova regola trasversale in cima allo Step 1, `AND status != Removed`
+  in tutte le query di lettura, query specchio di conteggio dei Removed, Step 4 riporta quanti task
+  sono stati esclusi. Corrette le due voci che dicevano il contrario (Step 2 Playbook, Step 4)
+- Decisione registrata in `wiki/decisions.md` (2026-08-19)
+- `npm run build` — zero errori TypeScript
+- CHANGELOG.md aggiornato in [Unreleased] › Miglioramenti e Bug fix
+
+🔍 Verifica dati JIRA
+- Task `Removed` sotto gli 11 epic: `totalCount` = 3 (CXUX-13478, CXUX-13685, CXUX-13686), tutti e
+  tre erano nel sito. Nessun altro task Removed presente
+- Il file contiene ora 42 righe `m(...)`: 45 in JIRA meno i 3 Removed
+
+⚠️ Azioni manuali
+- Deploy non eseguito: il sito in produzione mostra ancora i 3 task Removed e non ha il sottotitolo
+- Verifica visiva a 1024 / 1440 / 1920px non eseguita
+- Da decidere: la formulazione inglese del sottotitolo (alternative proposte a Simone)
+- Restano aperte: epic non mappato CXUX-14043, 3 capability segnaposto `XXXX`. L'epic Playbook
+  (CXUX-13134, Removed) rientra ora nella regola generale — resta da decidere se togliere il suo
+  mapping da `jira-projects.ts`

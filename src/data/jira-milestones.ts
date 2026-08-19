@@ -52,7 +52,6 @@ export const milestones: Milestone[] = [
   m("CXUX-13695", "Governance", "Sharing", "Improve Sprint DEMO (TBD)", "todo", "Shikha Shukla", "Identify needs and issues in the Sprint DEMO presentation and resolve them."),
 
   // Governance / Audit - AI Assistant (CXUX-13123)
-  m("CXUX-13478", "Governance", "Audit - AI Assistant", "Plan & Build Design System Audit Tool", "todo", "Lihi Shrem", ""),
   m("CXUX-13690", "Governance", "Audit - AI Assistant", "Kick off Audit AI Assistant for Design System", "done", "Erick Mathews", "Kick off the AI governance assistant project. Define scope, assign responsibilities, and prototype the first use case (component usage scanning or token drift detection)."),
   m("CXUX-13691", "Governance", "Audit - AI Assistant", "Assess the current adoption and usage of the Design System across the Design team", "todo", "Sheetal Barge-Gole", ""),
   m("CXUX-13692", "Governance", "Audit - AI Assistant", "DS Tokens", "in_progress", "Erick Mathews", ""),
@@ -82,8 +81,6 @@ export const milestones: Milestone[] = [
   m("CXUX-13682", "Efficiency", "JIRA Process", "Introducing JIRA process for researchers", "done", "Simone Mimun", "Roll out the new JIRA workflow for UX researchers. Define ticket types, field requirements, and tagging conventions. Run a guided onboarding session and collect initial friction points. Baseline process before the field-reduction work."),
   m("CXUX-13683", "Efficiency", "JIRA Process", "Reducing non necessary fields in JIRA", "done", "Simone Mimun", "Audit all JIRA field configurations used by the design team. Remove redundant or unused fields and simplify the ticket template to reduce cognitive load. Document the new streamlined schema. Prerequisite for achieving full engagement in S192."),
   m("CXUX-13684", "Efficiency", "JIRA Process", "50% JIRA Engagement for Researchers", "done", "Simone Mimun", ""),
-  m("CXUX-13685", "Efficiency", "JIRA Process", "100% JIRA Engagement for Researchers", "todo", "John Tucker", ""),
-  m("CXUX-13686", "Efficiency", "JIRA Process", "100% JIRA Engagement for Designers", "todo", "John Tucker", ""),
   m("CXUX-14032", "Efficiency", "JIRA Process", "Training for USA JIRA Champions", "in_progress", "Simone Mimun", ""),
   m("CXUX-14033", "Efficiency", "JIRA Process", "Training for USA Designrs", "todo", "John Tucker", ""),
 
